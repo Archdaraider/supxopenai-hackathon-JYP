@@ -72,20 +72,53 @@ export function runBehaviouralSignal(reviewCase: ReviewCase): SignalResult {
   if (!seller.user_profile_badge) limitations.push("Seller profile badge is unavailable.");
 
   const bounded = Math.max(0, Math.min(100, score));
+  const coverage = calculateBehaviouralCoverage(reviewCase);
   return {
     key: "behavioural",
     label: "Behavioural context",
     status: "complete",
     score: bounded,
-    confidence: 0.82,
+    confidence: coverage.confidence,
     explanation: explainBehaviouralScore(bounded),
     evidence,
     limitations,
     raw: {
       refundRate,
       buyerProfileBadge: buyer.user_profile_badge,
-      sellerProfileBadge: seller.user_profile_badge
+      sellerProfileBadge: seller.user_profile_badge,
+      coverage
     }
+  };
+}
+
+function calculateBehaviouralCoverage(reviewCase: ReviewCase) {
+  const { buyer, seller, order, product } = reviewCase;
+  const checks = [
+    ["buyer profile badge", hasText(buyer.user_profile_badge)],
+    ["buyer verification status", typeof buyer.identity_verified === "boolean"],
+    ["buyer account age", isFiniteNumber(buyer.account_age_days)],
+    ["buyer total orders", isFiniteNumber(buyer.total_orders)],
+    ["buyer total refunds", isFiniteNumber(buyer.total_refunds)],
+    ["buyer recent refund claims", isFiniteNumber(buyer.recent_refund_claims)],
+    ["buyer claims last 30 days", isFiniteNumber(buyer.claims_last_30_days)],
+    ["seller profile badge", hasText(seller.user_profile_badge)],
+    ["seller dispute count", isFiniteNumber(seller.disputes_last_90d)],
+    ["seller packaging complaints", isFiniteNumber(seller.packaging_complaints_count)],
+    ["order refund type", hasText(order.refund_type_requested)],
+    ["order refund amount", isFiniteNumber(order.refund_amount_requested_sgd)],
+    ["order claim cluster count", isFiniteNumber(order.total_claims_against_order)],
+    ["product price", isFiniteNumber(product.price_sgd)]
+  ] as const;
+
+  const available = checks.filter(([, present]) => present).length;
+  const expected = checks.length;
+  const missing = checks.flatMap(([label, present]) => present ? [] : [label]);
+
+  return {
+    available,
+    expected,
+    missing,
+    confidence: clampCoverage(available / expected)
   };
 }
 
@@ -93,4 +126,17 @@ function explainBehaviouralScore(score: number) {
   if (score >= 65) return "Behavioural context shows a concentrated pattern of claim velocity, account risk, or high refund exposure.";
   if (score >= 35) return "Behavioural context has some risk indicators but does not justify a hard conclusion by itself.";
   return "Behavioural context is mostly consistent with standard review rather than integrity escalation.";
+}
+
+function hasText(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isFiniteNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function clampCoverage(value: number) {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(0.95, Number(value.toFixed(2))));
 }

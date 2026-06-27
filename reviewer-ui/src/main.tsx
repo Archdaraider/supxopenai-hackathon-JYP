@@ -967,6 +967,8 @@ function confidenceLabel(signal: SignalResult) {
   if (signal.status === "not_configured") return "not run";
   if (signal.status === "error") return "excluded from score";
   if (signal.confidence === null) return "confidence not reported";
+  if (signal.key === "behavioural") return "rules-based behavioural score";
+  if (signal.key === "evidence_sufficiency") return "evidence coverage score";
   if (signal.key === "sightengine") return "detector result returned";
   return `${Math.round(signal.confidence * 100)}% model confidence`;
 }

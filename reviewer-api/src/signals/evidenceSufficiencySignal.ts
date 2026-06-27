@@ -43,12 +43,13 @@ export function runEvidenceSufficiencySignal(reviewCase: ReviewCase): SignalResu
   }
 
   const bounded = Math.max(0, Math.min(100, score));
+  const coverage = calculateEvidenceCoverage(reviewCase);
   return {
     key: "evidence_sufficiency",
     label: "Evidence sufficiency",
     status: "complete",
     score: bounded,
-    confidence: 0.72,
+    confidence: coverage.confidence,
     explanation: bounded >= 40
       ? "Evidence gaps mean the reviewer should request additional supporting material before relying on the claim."
       : "Evidence package is sufficient for initial review, though it may still need policy checks.",
@@ -56,7 +57,43 @@ export function runEvidenceSufficiencySignal(reviewCase: ReviewCase): SignalResu
     limitations,
     raw: {
       hasImage: Boolean(image),
-      metadataStatus: image?.metadata_status ?? null
+      metadataStatus: image?.metadata_status ?? null,
+      coverage
     }
   };
+}
+
+function calculateEvidenceCoverage(reviewCase: ReviewCase) {
+  const image = reviewCase.primaryImage;
+  const checks = [
+    ["claim image", Boolean(image)],
+    ["image metadata status", hasText(image?.metadata_status)],
+    ["image capture context", hasText(image?.capture_context)],
+    ["refund request description", hasText(reviewCase.claim.refund_request_description)],
+    ["claim reason category", hasText(reviewCase.claim.reason_category)],
+    ["seller response", hasText(reviewCase.sellerResponse)],
+    ["timeline", reviewCase.timeline.length > 0],
+    ["delivery date", hasText(reviewCase.order.delivered_at)],
+    ["dispute deadline", hasText(reviewCase.order.dispute_window_deadline)]
+  ] as const;
+
+  const available = checks.filter(([, present]) => present).length;
+  const expected = checks.length;
+  const missing = checks.flatMap(([label, present]) => present ? [] : [label]);
+
+  return {
+    available,
+    expected,
+    missing,
+    confidence: clampCoverage(available / expected)
+  };
+}
+
+function hasText(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function clampCoverage(value: number) {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(0.95, Number(value.toFixed(2))));
 }
