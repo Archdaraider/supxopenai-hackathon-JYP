@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Carousell Claim Dataset Dashboard</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08090a;
+      --panel: #101214;
+      --panel-2: #15181b;
+      --line: #272b30;
+      --line-2: #343a40;
+      --text: #f4f4f5;
+      --muted: #9ca3af;
+      --faint: #6b7280;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #fb7185;
+      --blue: #60a5fa;
+      --radius: 8px;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+        radial-gradient(circle at 10% 0%, rgba(96,165,250,.08), transparent 28%),
+        radial-gradient(circle at 90% 10%, rgba(52,211,153,.07), transparent 24%),
+        var(--bg);
+      background-size: 56px 56px, 56px 56px, auto, auto, auto;
+      color: var(--text);
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .shell { max-width: 1540px; margin: 0 auto; padding: 20px; }
+    header {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 48px); line-height: 1; letter-spacing: 0; }
+    .sub { margin: 10px 0 0; max-width: 760px; color: var(--muted); line-height: 1.55; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 30px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(16,18,20,.82);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin: 18px 0;
+    }
+    .stat, .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(21,24,27,.92), rgba(10,11,13,.92));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .stat { padding: 14px; }
+    .stat .label { color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
+    .stat .value { margin-top: 8px; font-size: 26px; font-weight: 750; }
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) 180px 180px;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    input, select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #0b0d0f;
+      color: var(--text);
+      padding: 0 12px;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: var(--line-2); }
+    .layout {
+      display: grid;
+      grid-template-columns: 420px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+    .list { max-height: calc(100vh - 230px); overflow: auto; }
+    .row {
+      width: 100%;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
+      color: inherit;
+      padding: 12px;
+      text-align: left;
+    }
+    .row:hover, .row.active { background: rgba(255,255,255,.045); }
+    .rowtop { display: flex; gap: 8px; justify-content: space-between; align-items: start; }
+    .id { color: #fff; font-weight: 750; }
+    .name { margin-top: 5px; color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .small { color: var(--faint); font-size: 12px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 4px 7px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .low { color: #bbf7d0; border-color: rgba(52,211,153,.28); background: rgba(52,211,153,.10); }
+    .elevated { color: #fde68a; border-color: rgba(251,191,36,.30); background: rgba(251,191,36,.10); }
+    .high { color: #fecdd3; border-color: rgba(251,113,133,.34); background: rgba(251,113,133,.12); }
+    .detail { padding: 16px; min-height: calc(100vh - 230px); }
+    .detail-head { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr) 360px; align-items: start; }
+    h2 { margin: 0; font-size: 24px; letter-spacing: 0; }
+    h3 { margin: 0 0 10px; font-size: 14px; color: #fff; }
+    .desc { margin: 10px 0 0; color: var(--muted); line-height: 1.55; }
+    .imagebox {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #090a0b;
+      aspect-ratio: 4 / 3;
+    }
+    .imagebox img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .grid { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 14px; }
+    .kv {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(8,9,10,.55);
+      padding: 10px;
+      min-width: 0;
+    }
+    .kv .k { color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; font-weight: 800; }
+    .kv .v { margin-top: 6px; color: var(--text); font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
+    .sections { display: grid; gap: 12px; margin-top: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .section { border: 1px solid var(--line); border-radius: var(--radius); background: rgba(8,9,10,.48); padding: 12px; }
+    .json {
+      white-space: pre-wrap;
+      overflow: auto;
+      max-height: 280px;
+      margin: 0;
+      color: #d1d5db;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .empty { padding: 28px; text-align: center; color: var(--faint); }
+    @media (max-width: 1080px) {
+      header, .layout, .detail-head { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .toolbar { grid-template-columns: 1fr; }
+      .list { max-height: 360px; }
+      .sections, .grid { grid-template-columns: 1fr; }
+      .meta { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>Behavioural Truth Dashboard</h1>
+        <p class="sub">A local viewer for Carousell dispute-review behavioural truth: buyer profiles, orders, sellers, products, claim descriptions, private eval labels, and attached evidence images. Built from the current JSON files in <code>data/</code>.</p>
+      </div>
+      <div class="meta">
+        <span class="pill"><span class="dot"></span>Local static viewer</span>
+        <span class="pill" id="generatedAt"></span>
+      </div>
+    </header>
+
+    <section class="stats" id="stats"></section>
+
+    <section class="toolbar">
+      <input id="search" type="search" placeholder="Search IDs, buyers, sellers, products, descriptions..." />
+      <select id="view">
+        <option value="claims">Claims</option>
+        <option value="accounts">Buyer profiles</option>
+        <option value="orders">Orders</option>
+        <option value="sellers">Sellers</option>
+        <option value="products">Products</option>
+      </select>
+      <select id="band">
+        <option value="all">All bands</option>
+        <option value="Low">Low</option>
+        <option value="Elevated">Elevated</option>
+        <option value="High">High</option>
+      </select>
+    </section>
+
+    <main class="layout">
+      <aside class="panel list" id="list"></aside>
+      <section class="panel detail" id="detail"></section>
+    </main>
+  </div>
+
+  <script id="dataset" type="application/json">{"accounts":[{"id":"A001","display_name":"new_home_buyer","account_created_at":"2026-06-18","account_age_days":9,"total_orders":2,"total_refunds":0,"recent_refund_claims":0,"claims_last_30_days":0,"profile_note":"new buyer with no prior refund history","user_profile_badge":"New User","user_profile_meaning":"Recently joined and still building marketplace activity.","user_profile_reviewer_guidance":"Use caution, especially when paired with high claim velocity or high-value refunds.","identity_verified":false},{"id":"A002","display_name":"plate_claim_fast","account_created_at":"2026-06-03","account_age_days":24,"total_orders":5,"total_refunds":3,"recent_refund_claims":3,"claims_last_30_days":3,"profile_note":"new account with several recent homeware damage disputes","user_profile_badge":"New User","user_profile_meaning":"Recently joined and still building marketplace activity.","user_profile_reviewer_guidance":"Use caution, especially when paired with high claim velocity or high-value refunds.","identity_verified":false},{"id":"A003","display_name":"helmetparts_sg","account_created_at":"2025-08-21","account_age_days":310,"total_orders":24,"total_refunds":2,"recent_refund_claims":1,"claims_last_30_days":1,"profile_note":"established buyer with low refund history","user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"A004","display_name":"beauty_bundle_buyer","account_created_at":"2024-01-24","account_age_days":520,"total_orders":48,"total_refunds":3,"recent_refund_claims":1,"claims_last_30_days":1,"profile_note":"established beauty buyer reporting packaging or fulfilment issues","user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"A005","display_name":"skincare_cashback_22","account_created_at":"2026-05-14","account_age_days":44,"total_orders":10,"total_refunds":6,"recent_refund_claims":4,"claims_last_30_days":4,"profile_note":"high refund rate and repeated skincare cash-refund requests","user_profile_badge":"Not Verified","user_profile_meaning":"User has not completed phone verification.","user_profile_reviewer_guidance":"Treat as a weaker identity signal; review behaviour and evidence closely.","identity_verified":false},{"id":"A006","display_name":"gift_mug_parent","account_created_at":"2025-10-01","account_age_days":269,"total_orders":31,"total_refunds":2,"recent_refund_claims":1,"claims_last_30_days":1,"profile_note":"clean buyer with product quality complaint","user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"A007","display_name":"storage_box_case_a","account_created_at":"2026-06-03","account_age_days":24,"total_orders":5,"total_refunds":3,"recent_refund_claims":3,"claims_last_30_days":3,"profile_note":"three same-shipment claims; should be treated as possible logistics cluster","user_profile_badge":"New User","user_profile_meaning":"Recently joined and still building marketplace activity.","user_profile_reviewer_guidance":"Use caution, especially when paired with high claim velocity or high-value refunds.","identity_verified":false},{"id":"A008","display_name":"frame_claims_fast","account_created_at":"2026-06-11","account_age_days":16,"total_orders":3,"total_refunds":2,"recent_refund_claims":3,"claims_last_30_days":3,"profile_note":"new account with high claim velocity on fragile items","user_profile_badge":"New User","user_profile_meaning":"Recently joined and still building marketplace activity.","user_profile_reviewer_guidance":"Use caution, especially when paired with high claim velocity or high-value refunds.","identity_verified":false},{"id":"A009","display_name":"fragile_frame_buyer","account_created_at":"2024-10-25","account_age_days":610,"total_orders":51,"total_refunds":4,"recent_refund_claims":1,"claims_last_30_days":1,"profile_note":"established buyer reporting plausible fragile-item transit damage","user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"A010","display_name":"usbclaim_772","account_created_at":"2026-05-30","account_age_days":28,"total_orders":5,"total_refunds":3,"recent_refund_claims":3,"claims_last_30_days":3,"profile_note":"new account with repeated electronics claims","user_profile_badge":"New User","user_profile_meaning":"Recently joined and still building marketplace activity.","user_profile_reviewer_guidance":"Use caution, especially when paired with high claim velocity or high-value refunds.","identity_verified":false},{"id":"A011","display_name":"hub_buyer_sg","account_created_at":"2025-07-22","account_age_days":340,"total_orders":27,"total_refunds":2,"recent_refund_claims":1,"claims_last_30_days":1,"profile_note":"clean buyer with broken connector claim","user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"A012","display_name":"monitor_returner_a","account_created_at":"2026-06-06","account_age_days":21,"total_orders":5,"total_refunds":3,"recent_refund_claims":3,"claims_last_30_days":3,"profile_note":"new account filing high-value electronics claim","user_profile_badge":"New User","user_profile_meaning":"Recently joined and still building marketplace activity.","user_profile_reviewer_guidance":"Use caution, especially when paired with high claim velocity or high-value refunds.","identity_verified":false},{"id":"A013","display_name":"monitor_returner_b","account_created_at":"2026-06-01","account_age_days":26,"total_orders":6,"total_refunds":4,"recent_refund_claims":3,"claims_last_30_days":3,"profile_note":"risky account with high-value monitor disputes","user_profile_badge":"New User","user_profile_meaning":"Recently joined and still building marketplace activity.","user_profile_reviewer_guidance":"Use caution, especially when paired with high claim velocity or high-value refunds.","identity_verified":false},{"id":"A014","display_name":"audio_flip_88","account_created_at":"2026-06-06","account_age_days":21,"total_orders":5,"total_refunds":3,"recent_refund_claims":3,"claims_last_30_days":3,"profile_note":"new account filing high-value audio interface claim","user_profile_badge":"New User","user_profile_meaning":"Recently joined and still building marketplace activity.","user_profile_reviewer_guidance":"Use caution, especially when paired with high claim velocity or high-value refunds.","identity_verified":false},{"id":"A015","display_name":"shirt_buyer_maya","account_created_at":"2025-06-22","account_age_days":370,"total_orders":38,"total_refunds":2,"recent_refund_claims":1,"claims_last_30_days":1,"profile_note":"established apparel buyer","user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"A016","display_name":"calcifer_collector","account_created_at":"2025-01-08","account_age_days":535,"total_orders":43,"total_refunds":3,"recent_refund_claims":1,"claims_last_30_days":1,"profile_note":"established collectibles buyer","user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"A017","display_name":"backpack_commuter","account_created_at":"2024-09-09","account_age_days":656,"total_orders":58,"total_refunds":3,"recent_refund_claims":1,"claims_last_30_days":1,"profile_note":"established daily-use goods buyer","user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"A018","display_name":"decor_claim_new","account_created_at":"2026-06-14","account_age_days":13,"total_orders":2,"total_refunds":1,"recent_refund_claims":2,"claims_last_30_days":2,"profile_note":"very new account with limited purchase history","user_profile_badge":"New User","user_profile_meaning":"Recently joined and still building marketplace activity.","user_profile_reviewer_guidance":"Use caution, especially when paired with high claim velocity or high-value refunds.","identity_verified":false},{"id":"A019","display_name":"shirt_claim_repeat","account_created_at":"2026-05-24","account_age_days":34,"total_orders":8,"total_refunds":4,"recent_refund_claims":3,"claims_last_30_days":3,"profile_note":"repeat apparel condition disputes","user_profile_badge":"Not Verified","user_profile_meaning":"User has not completed phone verification.","user_profile_reviewer_guidance":"Treat as a weaker identity signal; review behaviour and evidence closely.","identity_verified":false},{"id":"A020","display_name":"skincare_regular","account_created_at":"2024-12-10","account_age_days":565,"total_orders":62,"total_refunds":5,"recent_refund_claims":1,"claims_last_30_days":1,"profile_note":"established buyer with one current skincare damage claim","user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"A021","display_name":"visor_rider_17","account_created_at":"2026-06-08","account_age_days":19,"total_orders":4,"total_refunds":2,"recent_refund_claims":2,"claims_last_30_days":2,"profile_note":"new buyer with multiple accessory disputes","user_profile_badge":"New User","user_profile_meaning":"Recently joined and still building marketplace activity.","user_profile_reviewer_guidance":"Use caution, especially when paired with high claim velocity or high-value refunds.","identity_verified":false},{"id":"A022","display_name":"shirt_clean_case","account_created_at":"2025-03-01","account_age_days":483,"total_orders":29,"total_refunds":1,"recent_refund_claims":0,"claims_last_30_days":0,"profile_note":"clean established buyer","user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true}],"sellers":[{"id":"S001","display_name":"seller_001","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":21,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S002","display_name":"seller_002","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":22,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S003","display_name":"seller_003","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":23,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S004","display_name":"seller_004","seller_type":"shop","seller_created_at":"2024-01-01","orders_last_90d":24,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified Business","user_profile_meaning":"Business account that has completed identity verification.","user_profile_reviewer_guidance":"Use seller fulfilment history and category dispute patterns.","identity_verified":true},{"id":"S005","display_name":"seller_005","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":25,"disputes_last_90d":4,"packaging_complaints_count":3,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S006","display_name":"seller_006","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":26,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S007","display_name":"seller_007","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":27,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S010","display_name":"seller_008","seller_type":"shop","seller_created_at":"2024-01-01","orders_last_90d":28,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified Business","user_profile_meaning":"Business account that has completed identity verification.","user_profile_reviewer_guidance":"Use seller fulfilment history and category dispute patterns.","identity_verified":true},{"id":"S011","display_name":"seller_009","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":29,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S012","display_name":"seller_010","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":30,"disputes_last_90d":4,"packaging_complaints_count":3,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S013","display_name":"seller_011","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":31,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S014","display_name":"seller_012","seller_type":"shop","seller_created_at":"2024-01-01","orders_last_90d":32,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Certified Partner","user_profile_meaning":"Trusted third-party seller approved by Carousell.","user_profile_reviewer_guidance":"Seller-side risk is lower, but item evidence and logistics context still matter.","identity_verified":true},{"id":"S015","display_name":"seller_013","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":33,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S016","display_name":"seller_014","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":34,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S017","display_name":"seller_015","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":35,"disputes_last_90d":4,"packaging_complaints_count":3,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S018","display_name":"seller_016","seller_type":"shop","seller_created_at":"2024-01-01","orders_last_90d":36,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Preferred Merchant","user_profile_meaning":"Top-rated seller with strong performance in a category.","user_profile_reviewer_guidance":"Use category-level seller performance as a mitigating context signal.","identity_verified":true},{"id":"S019","display_name":"seller_017","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":37,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S020","display_name":"seller_018","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":38,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S021","display_name":"seller_019","seller_type":"individual","seller_created_at":"2024-01-01","orders_last_90d":39,"disputes_last_90d":1,"packaging_complaints_count":0,"user_profile_badge":"Verified User","user_profile_meaning":"User has confirmed their identity through ID verification.","user_profile_reviewer_guidance":"Use reviews and behavioural history; verification reduces uncertainty but does not override claim patterns.","identity_verified":true},{"id":"S022","display_name":"seller_020","seller_type":"shop","seller_created_at":"2024-01-01","orders_last_90d":40,"disputes_last_90d":4,"packaging_complaints_count":3,"user_profile_badge":"Carousell Official","user_profile_meaning":"Account managed directly by Carousell, brand owners, or authorized distributors.","user_profile_reviewer_guidance":"Route issues toward official fulfilment or warranty process where applicable.","identity_verified":true}],"orders":[{"id":"ORD-3001","account_id":"A001","buyer_account_id":"A001","seller_id":"S001","product_id":"P004","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"full_or_partial_review","refund_amount_requested_sgd":8,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3002","account_id":"A002","buyer_account_id":"A002","seller_id":"S002","product_id":"P006","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"partial","refund_amount_requested_sgd":9,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3003","account_id":"A003","buyer_account_id":"A003","seller_id":"S003","product_id":"P002","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"full_or_partial_review","refund_amount_requested_sgd":32.5,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3004","account_id":"A004","buyer_account_id":"A004","seller_id":"S004","product_id":"P003","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"full_or_partial_review","refund_amount_requested_sgd":29,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3005","account_id":"A005","buyer_account_id":"A005","seller_id":"S005","product_id":"P003","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"partial","refund_amount_requested_sgd":29,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3006","account_id":"A006","buyer_account_id":"A006","seller_id":"S006","product_id":"P010","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"full_or_partial_review","refund_amount_requested_sgd":21,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3007","account_id":"A007","buyer_account_id":"A007","seller_id":"S007","product_id":"P005","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":3,"total_claims_against_order":3,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"full_or_partial_review","refund_amount_requested_sgd":6,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3008","account_id":"A008","buyer_account_id":"A008","seller_id":"S010","product_id":"P006","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"partial","refund_amount_requested_sgd":9,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3009","account_id":"A009","buyer_account_id":"A009","seller_id":"S011","product_id":"P006","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"full_or_partial_review","refund_amount_requested_sgd":9,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3010","account_id":"A010","buyer_account_id":"A010","seller_id":"S012","product_id":"P007","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"partial","refund_amount_requested_sgd":12.5,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3011","account_id":"A011","buyer_account_id":"A011","seller_id":"S013","product_id":"P007","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"full_or_partial_review","refund_amount_requested_sgd":12.5,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3012","account_id":"A012","buyer_account_id":"A012","seller_id":"S014","product_id":"P008","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"partial","refund_amount_requested_sgd":94.5,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3013","account_id":"A013","buyer_account_id":"A013","seller_id":"S015","product_id":"P008","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"partial","refund_amount_requested_sgd":94.5,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3014","account_id":"A013","buyer_account_id":"A013","seller_id":"S016","product_id":"P008","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"partial","refund_amount_requested_sgd":94.5,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3015","account_id":"A014","buyer_account_id":"A014","seller_id":"S017","product_id":"P009","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"partial","refund_amount_requested_sgd":199.5,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3016","account_id":"A015","buyer_account_id":"A015","seller_id":"S018","product_id":"P001","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"full_or_partial_review","refund_amount_requested_sgd":17.5,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3017","account_id":"A016","buyer_account_id":"A016","seller_id":"S019","product_id":"P011","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"full_or_partial_review","refund_amount_requested_sgd":36,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3018","account_id":"A017","buyer_account_id":"A017","seller_id":"S020","product_id":"P001","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"full_or_partial_review","refund_amount_requested_sgd":17.5,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3019","account_id":"A019","buyer_account_id":"A019","seller_id":"S021","product_id":"P002","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"partial","refund_amount_requested_sgd":32.5,"return_required":false,"dispute_window_deadline":"2026-06-26"},{"id":"ORD-3020","account_id":"A020","buyer_account_id":"A020","seller_id":"S022","product_id":"P003","ordered_at":"2026-06-20","delivered_at":"2026-06-24","delivery_date":"2026-06-24","items":1,"total_claims_against_order":1,"fulfilment_method":"tracked_mail","programme":"Buyer Protection","refund_type_requested":"full_or_partial_review","refund_amount_requested_sgd":29,"return_required":false,"dispute_window_deadline":"2026-06-26"}],"products":[{"id":"P001","name":"Long-Sleeve Cotton Shirt","category":"Fashion","material":"cotton knit or woven fabric with stitched seams and cuffs","typical_failure_modes":["tears along seams or stress points","fraying around cuffs and hems","small punctures with pulled fabric"],"price_sgd":35,"reference_image":"shirt_intact.jpg"},{"id":"P002","name":"Tinted Motorcycle Helmet Visor","category":"Automotive Accessories","material":"tinted polycarbonate lens with anti-scratch coating","typical_failure_modes":["surface scratches that scatter light","edge chips from impact","cracks radiating from mounting points"],"price_sgd":65},{"id":"P003","name":"Torriden Dive-In Skincare Set","category":"Beauty","material":"plastic cosmetic jars and tubes with cardboard retail packaging","typical_failure_modes":["cracked plastic jar or lid from compression","leakage from a broken seal","crushed or torn cardboard packaging"],"price_sgd":58},{"id":"P004","name":"Custom Ceramic Photo Mug","category":"Home & Living","material":"glazed ceramic mug with printed polymer transfer","typical_failure_modes":["chips at the rim, handle, or base","cracks from impact or thermal stress","print transfer smudges or alignment defects"],"price_sgd":16},{"id":"P005","name":"Clear Plastic Storage Container","category":"Home & Living","material":"transparent polypropylene plastic container with snap-on plastic lid","typical_failure_modes":["corner cracks or star fractures from impact","rim or lid-tab breaks from bending","stress whitening around cracked plastic"],"price_sgd":12},{"id":"P006","name":"A4 Glass Photo Frame","category":"Home & Living","material":"glass pane in a synthetic leather frame","typical_failure_modes":["glass shatters into radiating cracks from impact","loose glass fragments inside the frame","chipped or split frame corners"],"price_sgd":18},{"id":"P007","name":"Vention 4-Port USB Hub","category":"Electronics","material":"plastic and aluminium hub casing with USB-A ports and rubberized cable","typical_failure_modes":["USB connector shell bends or detaches","port housing cracks from insertion force","cable strain relief tears near the casing"],"price_sgd":25},{"id":"P008","name":"Acer KA2 27-inch IPS Monitor","category":"Electronics","material":"LCD glass panel with plastic housing and metal stand","typical_failure_modes":["LCD panel cracks from impact or torsion","pressure damage causing display lines or black areas","stand or housing fracture during transit"],"price_sgd":189},{"id":"P009","name":"Solid State Logic SSL 2 USB Audio Interface","category":"Audio","material":"aluminium chassis with plastic control knobs","typical_failure_modes":["knob cracks or pulls off the potentiometer shaft","scuffs, scratches, or dents on the metal faceplate","bent or damaged rear I/O connectors"],"price_sgd":399,"reference_image":"ssl2_intact.jpg"},{"id":"P010","name":"Calcifer Ceramic Figurine","category":"Collectibles","material":"painted ceramic figurine with narrow decorative protrusions","typical_failure_modes":["thin protrusions snap under impact","ceramic chips at raised edges","paint scuffs around impact points"],"price_sgd":42,"reference_image":"calcifer_intact.jpg"},{"id":"P011","name":"Nylon Commuter Backpack","category":"Bags & Wallets","material":"woven nylon shell with stitched seams and zipper hardware","typical_failure_modes":["fabric tears along load-bearing seams","zipper teeth or pullers break","abrasion on corners and bottom panel"],"price_sgd":72,"reference_image":"backpack_intact.jpg"},{"id":"P012","name":"Decorative Wall Frame","category":"Home & Living","material":"thin glass or acrylic pane with lightweight frame","typical_failure_modes":["pane cracks from corner impact","frame separates at mitred corners","surface scratches across clear panel"],"price_sgd":24}],"claims":[{"id":"C001","account_id":"A001","product_id":"P004","order_id":"ORD-3001","reason_category":"not_as_described","refund_request_description":"The custom mug arrived with the photo printed too small and slightly slanted. There are red smudges near the edge of the image, so I want a partial refund.","claim_text":"The custom mug arrived with the photo printed too small and slightly slanted. There are red smudges near the edge of the image, so I want a partial refund.","images":[{"image_id":"IMG-C001-1","filename":"mug_print_smudged.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"clean buyer; visible print-quality issue is plausible and low value","expected_band":"Low","why":"clean buyer; visible print-quality issue is plausible and low value","expected_outcome_label":"legitimate"}},{"id":"C002","account_id":"A002","product_id":"P006","order_id":"ORD-3002","reason_category":"damaged_or_faulty","refund_request_description":"The frame arrived cracked across the front. Seller says it was fine before shipping, but the item was broken when I opened it.","claim_text":"The frame arrived cracked across the front. Seller says it was fine before shipping, but the item was broken when I opened it.","images":[{"image_id":"IMG-C002-1","filename":"frame_shattered.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"new account with repeat claims; damage appears plausible so behaviour only should not force High","expected_band":"Elevated","why":"new account with repeat claims; damage appears plausible so behaviour only should not force High","expected_outcome_label":"fraudulent"}},{"id":"C003","account_id":"A003","product_id":"P002","order_id":"ORD-3003","reason_category":"not_as_described","refund_request_description":"The visor came scratched and the tint is not the colour shown in the listing. Seller refused refund and says colour variation is normal.","claim_text":"The visor came scratched and the tint is not the colour shown in the listing. Seller refused refund and says colour variation is normal.","images":[{"image_id":"IMG-C003-1","filename":"visor_scratched_wrong_color.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"established buyer with plausible condition mismatch","expected_band":"Low","why":"established buyer with plausible condition mismatch","expected_outcome_label":"legitimate"}},{"id":"C004","account_id":"A004","product_id":"P003","order_id":"ORD-3004","reason_category":"damaged_or_faulty","refund_request_description":"The skincare box arrived crushed and opened at the side. I am asking for a small refund because the set was bought as a gift.","claim_text":"The skincare box arrived crushed and opened at the side. I am asking for a small refund because the set was bought as a gift.","images":[{"image_id":"IMG-C004-1","filename":"skincare_packaging_damaged.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"clean account; packaging issue may need policy review but not integrity escalation","expected_band":"Low","why":"clean account; packaging issue may need policy review but not integrity escalation","expected_outcome_label":"legitimate"}},{"id":"C005","account_id":"A005","product_id":"P003","order_id":"ORD-3005","reason_category":"damaged_or_faulty","refund_request_description":"The entire skincare set arrived damaged and I want 50 percent refund without returning it because the seller packed it badly.","claim_text":"The entire skincare set arrived damaged and I want 50 percent refund without returning it because the seller packed it badly.","images":[{"image_id":"IMG-C005-1","filename":"skincare_boxes_cracked.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"high refund rate and partial-refund request; image is unique so no hard image-reuse flag","expected_band":"Elevated","why":"high refund rate and partial-refund request; image is unique so no hard image-reuse flag","expected_outcome_label":"fraudulent"}},{"id":"C006","account_id":"A006","product_id":"P010","order_id":"ORD-3006","reason_category":"damaged_or_faulty","refund_request_description":"The figurine arrived with a piece broken off. Seller says I probably dropped it after delivery, but it was already like this in the parcel.","claim_text":"The figurine arrived with a piece broken off. Seller says I probably dropped it after delivery, but it was already like this in the parcel.","images":[{"image_id":"IMG-C006-1","filename":"calcifer_broken.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"established collector; fragile ceramic break is plausible","expected_band":"Low","why":"established collector; fragile ceramic break is plausible","expected_outcome_label":"legitimate"}},{"id":"C007","account_id":"A007","product_id":"P005","order_id":"ORD-3007","reason_category":"damaged_or_faulty","refund_request_description":"One storage container came cracked and dirty on the side. Seller says all three were packed together, but I need refund for this one.","claim_text":"One storage container came cracked and dirty on the side. Seller says all three were packed together, but I need refund for this one.","images":[{"image_id":"IMG-C007-1","filename":"plastic_container_side_crack.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"same shipment cluster should route to logistics/fulfilment","expected_band":"Low","why":"same shipment cluster should route to logistics/fulfilment","expected_outcome_label":"legitimate"}},{"id":"C008","account_id":"A007","product_id":"P005","order_id":"ORD-3007","reason_category":"damaged_or_faulty","refund_request_description":"Second container lid has a crack near the rim. This came in the same delivery as the other damaged boxes.","claim_text":"Second container lid has a crack near the rim. This came in the same delivery as the other damaged boxes.","images":[{"image_id":"IMG-C008-1","filename":"plastic_container_lid_crack_closeup.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"same shipment cluster should lower buyer-integrity risk","expected_band":"Low","why":"same shipment cluster should lower buyer-integrity risk","expected_outcome_label":"legitimate"}},{"id":"C009","account_id":"A007","product_id":"P005","order_id":"ORD-3007","reason_category":"damaged_or_faulty","refund_request_description":"Third container lid also came cracked. Photo is blurry but all were damaged in one parcel.","claim_text":"Third container lid also came cracked. Photo is blurry but all were damaged in one parcel.","images":[{"image_id":"IMG-C009-1","filename":"plastic_container_lid_crack_blurry.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"same shipment cluster plus evidence sufficiency issue","expected_band":"Low","why":"same shipment cluster plus evidence sufficiency issue","expected_outcome_label":"legitimate"}},{"id":"C010","account_id":"A008","product_id":"P006","order_id":"ORD-3008","reason_category":"damaged_or_faulty","refund_request_description":"Glass frame came completely shattered. I threw away the packaging already but want refund because it was definitely broken on arrival.","claim_text":"Glass frame came completely shattered. I threw away the packaging already but want refund because it was definitely broken on arrival.","images":[{"image_id":"IMG-C010-1","filename":"glass_frame_shattered_handheld.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"new account with high claim velocity; plausible damage but missing packaging context","expected_band":"Elevated","why":"new account with high claim velocity; plausible damage but missing packaging context","expected_outcome_label":"fraudulent"}},{"id":"C011","account_id":"A009","product_id":"P006","order_id":"ORD-3009","reason_category":"damaged_or_faulty","refund_request_description":"Frame was shattered inside the packaging with loose glass pieces. Seller rejected refund and said courier mishandled it.","claim_text":"Frame was shattered inside the packaging with loose glass pieces. Seller rejected refund and said courier mishandled it.","images":[{"image_id":"IMG-C011-1","filename":"glass_frame_shattered_packaging.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"established buyer; fragile item transit damage is plausible","expected_band":"Low","why":"established buyer; fragile item transit damage is plausible","expected_outcome_label":"legitimate"}},{"id":"C012","account_id":"A010","product_id":"P007","order_id":"ORD-3010","reason_category":"damaged_or_faulty","refund_request_description":"One USB port came bare and casing is damaged. It is not working, not only cosmetic. I want refund without return because it is cheap.","claim_text":"One USB port came bare and casing is damaged. It is not working, not only cosmetic. I want refund without return because it is cheap.","images":[{"image_id":"IMG-C012-1","filename":"usb_hub_port_cracked.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"new account with repeated electronics claims and no hard image signal","expected_band":"Elevated","why":"new account with repeated electronics claims and no hard image signal","expected_outcome_label":"fraudulent"}},{"id":"C013","account_id":"A011","product_id":"P007","order_id":"ORD-3011","reason_category":"damaged_or_faulty","refund_request_description":"The USB connector broke before first use. Seller says I forced it, but it arrived loose in the packaging.","claim_text":"The USB connector broke before first use. Seller says I forced it, but it arrived loose in the packaging.","images":[{"image_id":"IMG-C013-1","filename":"usb_hub_connector_broken.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"clean buyer; connector break is plausible","expected_band":"Low","why":"clean buyer; connector break is plausible","expected_outcome_label":"legitimate"}},{"id":"C014","account_id":"A012","product_id":"P008","order_id":"ORD-3012","reason_category":"damaged_or_faulty","refund_request_description":"Monitor screen was cracked when I opened the box. Seller says I opened too late, but it came this way and I want refund.","claim_text":"Monitor screen was cracked when I opened the box. Seller says I opened too late, but it came this way and I want refund.","images":[{"image_id":"IMG-C014-1","filename":"monitor_packaging_cracked.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"new account and high-value item; plausible LCD damage so request evidence rather than High","expected_band":"Elevated","why":"new account and high-value item; plausible LCD damage so request evidence rather than High","expected_outcome_label":"fraudulent"}},{"id":"C015","account_id":"A013","product_id":"P008","order_id":"ORD-3013","reason_category":"damaged_or_faulty","refund_request_description":"Acer monitor has a large screen crack straight out of the box. I need a cash refund because warranty will not cover it.","claim_text":"Acer monitor has a large screen crack straight out of the box. I need a cash refund because warranty will not cover it.","images":[{"image_id":"IMG-C015-1","filename":"monitor_office_cracked.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"risky account and high-value electronics claim","expected_band":"Elevated","why":"risky account and high-value electronics claim","expected_outcome_label":"fraudulent"}},{"id":"C016","account_id":"A013","product_id":"P008","order_id":"ORD-3014","reason_category":"damaged_or_faulty","refund_request_description":"Second photo shows the same damaged monitor on my desk. Seller rejected refund and says it was damaged after delivery.","claim_text":"Second photo shows the same damaged monitor on my desk. Seller rejected refund and says it was damaged after delivery.","images":[{"image_id":"IMG-C016-1","filename":"monitor_desktop_cracked.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"supporting evidence for risky monitor dispute; unique image, no reuse","expected_band":"Elevated","why":"supporting evidence for risky monitor dispute; unique image, no reuse","expected_outcome_label":"fraudulent"}},{"id":"C017","account_id":"A014","product_id":"P009","order_id":"ORD-3015","reason_category":"damaged_or_faulty","refund_request_description":"The audio interface arrived with the monitor knob snapped off and the top panel cracked all around it.","claim_text":"The audio interface arrived with the monitor knob snapped off and the top panel cracked all around it.","images":[{"image_id":"IMG-C017-1","filename":"ssl2_broken.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"high-value item; physical plausibility should be questioned because aluminium usually dents or scuffs rather than cracking radially","expected_band":"High","why":"high-value item; physical plausibility should be questioned because aluminium usually dents or scuffs rather than cracking radially","expected_outcome_label":"fraudulent"}},{"id":"C018","account_id":"A015","product_id":"P001","order_id":"ORD-3016","reason_category":"damaged_or_faulty","refund_request_description":"The shirt sleeve arrived with a large rip near the cuff. Seller says it is wear and tear, but I noticed it immediately.","claim_text":"The shirt sleeve arrived with a large rip near the cuff. Seller says it is wear and tear, but I noticed it immediately.","images":[{"image_id":"IMG-C018-1","filename":"shirt_black_sleeve_rip.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"established buyer; textile tear is plausible","expected_band":"Low","why":"established buyer; textile tear is plausible","expected_outcome_label":"legitimate"}},{"id":"C019","account_id":"A016","product_id":"P011","order_id":"ORD-3017","reason_category":"damaged_or_faulty","refund_request_description":"The backpack seam tore open on arrival before I used it. Seller says bags are checked before shipping.","claim_text":"The backpack seam tore open on arrival before I used it. Seller says bags are checked before shipping.","images":[{"image_id":"IMG-C019-1","filename":"backpack_torn.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"established buyer; seam tear plausible","expected_band":"Low","why":"established buyer; seam tear plausible","expected_outcome_label":"legitimate"}},{"id":"C020","account_id":"A017","product_id":"P001","order_id":"ORD-3018","reason_category":"damaged_or_faulty","refund_request_description":"The shirt fabric is torn near the side. I want a partial refund because seller does not want to accept return.","claim_text":"The shirt fabric is torn near the side. I want a partial refund because seller does not want to accept return.","images":[{"image_id":"IMG-C020-1","filename":"shirt_torn.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"clean buyer; plausible apparel damage","expected_band":"Low","why":"clean buyer; plausible apparel damage","expected_outcome_label":"legitimate"}},{"id":"C021","account_id":"A019","product_id":"P002","order_id":"ORD-3019","reason_category":"damaged_or_faulty","refund_request_description":"Helmet visor lens has a scratch across the front and blocks my view. Seller says scratches happened after delivery.","claim_text":"Helmet visor lens has a scratch across the front and blocks my view. Seller says scratches happened after delivery.","images":[{"image_id":"IMG-C021-1","filename":"visor_lens_scratch.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"repeat claims and accessory dispute; plausible damage","expected_band":"Elevated","why":"repeat claims and accessory dispute; plausible damage","expected_outcome_label":"fraudulent"}},{"id":"C022","account_id":"A020","product_id":"P003","order_id":"ORD-3020","reason_category":"damaged_or_faulty","refund_request_description":"The moisturiser jar arrived cracked at the lid. I want refund because product may leak.","claim_text":"The moisturiser jar arrived cracked at the lid. I want refund because product may leak.","images":[{"image_id":"IMG-C022-1","filename":"skincare_jar_cracked_closeup.jpg","role":"claim_evidence","metadata_status":"stripped","source":"buyer_upload","capture_context":"item_damage"}],"_dev":{"scenario_role":"established buyer; cracked plastic jar plausible","expected_band":"Low","why":"established buyer; cracked plastic jar plausible","expected_outcome_label":"legitimate"}}],"generatedAt":"2026-06-27T04:21:42.877Z"}</script>
+  <script>
+    const db = JSON.parse(document.getElementById("dataset").textContent);
+    const $ = (id) => document.getElementById(id);
+    let state = { view: "claims", q: "", band: "all", selected: null };
+
+    const byId = (items) => Object.fromEntries(items.map((item) => [item.id, item]));
+    const accounts = byId(db.accounts);
+    const sellers = byId(db.sellers);
+    const orders = byId(db.orders);
+    const products = byId(db.products);
+    const claims = byId(db.claims);
+
+    function init() {
+      $("generatedAt").textContent = "Generated " + new Date(db.generatedAt).toLocaleString();
+      $("search").addEventListener("input", (event) => { state.q = event.target.value.toLowerCase(); render(); });
+      $("view").addEventListener("change", (event) => { state.view = event.target.value; state.selected = null; render(); });
+      $("band").addEventListener("change", (event) => { state.band = event.target.value; render(); });
+      render();
+    }
+
+    function render() {
+      renderStats();
+      const items = filteredItems();
+      if (!state.selected && items[0]) state.selected = items[0].id;
+      if (items.length && !items.some((item) => item.id === state.selected)) state.selected = items[0].id;
+      renderList(items);
+      renderDetail(items.find((item) => item.id === state.selected) || items[0]);
+    }
+
+    function filteredItems() {
+      const base = db[state.view];
+      const q = state.q;
+      return base.filter((item) => {
+        if (state.view === "claims" && state.band !== "all" && item._dev?.expected_band !== state.band) return false;
+        if (!q) return true;
+        return JSON.stringify(enrich(item)).toLowerCase().includes(q);
+      });
+    }
+
+    function enrich(item) {
+      if (state.view !== "claims") return item;
+      return {
+        ...item,
+        account: accounts[item.account_id],
+        order: orders[item.order_id],
+        product: products[item.product_id],
+        seller: sellers[orders[item.order_id]?.seller_id],
+      };
+    }
+
+    function renderStats() {
+      const high = db.claims.filter((c) => c._dev?.expected_band === "High").length;
+      const elevated = db.claims.filter((c) => c._dev?.expected_band === "Elevated").length;
+      const low = db.claims.filter((c) => c._dev?.expected_band === "Low").length;
+      $("stats").innerHTML = [
+        stat("Claims", db.claims.length),
+        stat("Buyer profiles", db.accounts.length),
+        stat("Orders", db.orders.length),
+        stat("Products", db.products.length),
+        stat("Bands", high + " high / " + elevated + " elevated / " + low + " low"),
+      ].join("");
+    }
+
+    function stat(label, value) {
+      return '<div class="stat"><div class="label">' + esc(label) + '</div><div class="value">' + esc(value) + '</div></div>';
+    }
+
+    function renderList(items) {
+      $("list").innerHTML = items.length ? items.map((item) => row(item)).join("") : '<div class="empty">No records match.</div>';
+      document.querySelectorAll(".row").forEach((button) => {
+        button.addEventListener("click", () => { state.selected = button.dataset.id; render(); });
+      });
+    }
+
+    function row(item) {
+      const active = item.id === state.selected ? " active" : "";
+      if (state.view === "claims") {
+        const product = products[item.product_id];
+        const account = accounts[item.account_id];
+        const band = item._dev?.expected_band || "Unknown";
+        return '<button class="row' + active + '" data-id="' + esc(item.id) + '">' +
+          '<div class="rowtop"><span class="id">' + esc(item.id) + '</span>' + bandBadge(band) + '</div>' +
+          '<div class="name">' + esc(product?.name || item.product_id) + '</div>' +
+          '<div class="small">' + esc(account?.display_name || item.account_id) + ' · ' + esc(item.reason_category) + '</div>' +
+        '</button>';
+      }
+      const primary = item.display_name || item.name || item.id;
+      return '<button class="row' + active + '" data-id="' + esc(item.id) + '">' +
+        '<div class="rowtop"><span class="id">' + esc(item.id) + '</span></div>' +
+        '<div class="name">' + esc(primary) + '</div>' +
+        '<div class="small">' + esc(summary(item)) + '</div>' +
+      '</button>';
+    }
+
+    function renderDetail(item) {
+      if (!item) {
+        $("detail").innerHTML = '<div class="empty">Select a record.</div>';
+        return;
+      }
+      if (state.view === "claims") return renderClaim(item);
+      if (state.view === "accounts") return renderAccount(item);
+      if (state.view === "orders") return renderOrder(item);
+      if (state.view === "sellers") return renderSeller(item);
+      return renderProduct(item);
+    }
+
+    function renderClaim(claim) {
+      const account = accounts[claim.account_id] || {};
+      const order = orders[claim.order_id] || {};
+      const product = products[claim.product_id] || {};
+      const seller = sellers[order.seller_id] || {};
+      const image = claim.images?.[0];
+      $("detail").innerHTML =
+        '<div class="detail-head">' +
+          '<div><div class="chips">' + bandBadge(claim._dev?.expected_band) + badge(account.user_profile_badge || "profile unknown") + badge(image?.metadata_status || "metadata unknown") + '</div>' +
+          '<h2>' + esc(claim.id) + ' · ' + esc(product.name || claim.product_id) + '</h2>' +
+          '<p class="desc">' + esc(claim.refund_request_description || claim.claim_text || "") + '</p></div>' +
+          '<div class="imagebox">' + (image ? '<img src="data/images/claims/' + encodeURIComponent(image.filename) + '" alt="' + esc(image.filename) + '">' : '') + '</div>' +
+        '</div>' +
+        '<div class="grid">' +
+          kv("Buyer", account.display_name || claim.account_id) +
+          kv("Buyer profile", account.user_profile_badge || "n/a") +
+          kv("ID verified", account.identity_verified ? "Yes" : "No") +
+          kv("Seller", seller.display_name || order.seller_id || "n/a") +
+          kv("Seller profile", seller.user_profile_badge || "n/a") +
+          kv("Order", claim.order_id) +
+          kv("Refund type", order.refund_type_requested || "n/a") +
+          kv("Refund amount", money(order.refund_amount_requested_sgd)) +
+          kv("Return required", String(order.return_required)) +
+          kv("Fulfilment", order.fulfilment_method || "n/a") +
+          kv("Dispute deadline", order.dispute_window_deadline || "n/a") +
+        '</div>' +
+        '<div class="sections">' +
+          section("Buyer behavioural truth", obj(account)) +
+          section("Order", obj(order)) +
+          section("Seller", obj(seller)) +
+          section("Product", obj(product)) +
+          section("Image", obj(image || {})) +
+          section("Private eval label", obj(claim._dev || {})) +
+        '</div>';
+    }
+
+    function renderAccount(account) {
+      const accountClaims = db.claims.filter((c) => c.account_id === account.id);
+      $("detail").innerHTML =
+        '<h2>' + esc(account.id) + ' · ' + esc(account.display_name) + '</h2>' +
+        '<p class="desc">' + esc(account.profile_note || "") + '</p>' +
+        '<div class="grid">' +
+          kv("Created", account.account_created_at) +
+          kv("Profile badge", account.user_profile_badge || "n/a") +
+          kv("ID verified", account.identity_verified ? "Yes" : "No") +
+          kv("Age", account.account_age_days + " days") +
+          kv("Orders", account.total_orders) +
+          kv("Refunds", account.total_refunds) +
+          kv("Recent claims", account.recent_refund_claims) +
+          kv("Claims in 30d", account.claims_last_30_days) +
+        '</div>' +
+        '<div class="sections">' + section("Claims for this buyer", accountClaims.map((c) => c.id + " · " + (products[c.product_id]?.name || c.product_id) + " · " + c._dev?.expected_band).join("\\n") || "None") + section("Raw behavioural truth", obj(account)) + '</div>';
+    }
+
+    function renderOrder(order) {
+      const orderClaims = db.claims.filter((c) => c.order_id === order.id);
+      $("detail").innerHTML =
+        '<h2>' + esc(order.id) + '</h2>' +
+        '<div class="grid">' +
+          kv("Buyer", accounts[order.account_id]?.display_name || order.account_id) +
+          kv("Seller", sellers[order.seller_id]?.display_name || order.seller_id) +
+          kv("Product", products[order.product_id]?.name || order.product_id) +
+          kv("Items", order.items) +
+          kv("Order claims", order.total_claims_against_order) +
+          kv("Programme", order.programme) +
+          kv("Fulfilment", order.fulfilment_method) +
+          kv("Refund type", order.refund_type_requested) +
+        '</div>' +
+        '<div class="sections">' + section("Claims on order", orderClaims.map((c) => c.id + " · " + c.refund_request_description).join("\\n") || "None") + section("Raw order", obj(order)) + '</div>';
+    }
+
+    function renderSeller(seller) {
+      const sellerOrders = db.orders.filter((o) => o.seller_id === seller.id);
+      $("detail").innerHTML =
+        '<h2>' + esc(seller.id) + ' · ' + esc(seller.display_name) + '</h2>' +
+        '<div class="grid">' +
+          kv("Type", seller.seller_type) +
+          kv("Profile badge", seller.user_profile_badge || "n/a") +
+          kv("ID verified", seller.identity_verified ? "Yes" : "No") +
+          kv("Created", seller.seller_created_at) +
+          kv("Orders 90d", seller.orders_last_90d) +
+          kv("Disputes 90d", seller.disputes_last_90d) +
+          kv("Packaging complaints", seller.packaging_complaints_count) +
+        '</div>' +
+        '<div class="sections">' + section("Orders", sellerOrders.map((o) => o.id + " · " + (products[o.product_id]?.name || o.product_id)).join("\\n") || "None") + section("Raw seller", obj(seller)) + '</div>';
+    }
+
+    function renderProduct(product) {
+      const productClaims = db.claims.filter((c) => c.product_id === product.id);
+      const ref = product.reference_image ? '<div class="imagebox"><img src="data/images/reference/' + encodeURIComponent(product.reference_image) + '" alt="' + esc(product.reference_image) + '"></div>' : "";
+      $("detail").innerHTML =
+        '<div class="detail-head"><div><h2>' + esc(product.id) + ' · ' + esc(product.name) + '</h2><p class="desc">' + esc(product.material || "") + '</p></div>' + ref + '</div>' +
+        '<div class="grid">' +
+          kv("Category", product.category) +
+          kv("Price", money(product.price_sgd)) +
+          kv("Reference image", product.reference_image || "None") +
+          kv("Claims", productClaims.length) +
+        '</div>' +
+        '<div class="sections">' + section("Typical failure modes", (product.typical_failure_modes || []).join("\\n")) + section("Claims", productClaims.map((c) => c.id + " · " + c._dev?.expected_band + " · " + c.refund_request_description).join("\\n") || "None") + section("Raw product", obj(product)) + '</div>';
+    }
+
+    function kv(k, v) { return '<div class="kv"><div class="k">' + esc(k) + '</div><div class="v">' + esc(v ?? "n/a") + '</div></div>'; }
+    function section(title, content) { return '<div class="section"><h3>' + esc(title) + '</h3><pre class="json">' + esc(content || "None") + '</pre></div>'; }
+    function obj(value) { return JSON.stringify(value, null, 2); }
+    function badge(text) { return '<span class="badge">' + esc(text || "n/a") + '</span>'; }
+    function bandBadge(band) { return '<span class="badge ' + String(band || "").toLowerCase() + '">' + esc(band || "Unknown") + '</span>'; }
+    function money(value) { return typeof value === "number" ? "SGD " + value.toFixed(2) : "n/a"; }
+    function summary(item) {
+      if (state.view === "accounts") return item.profile_note || "";
+      if (state.view === "orders") return [item.account_id, item.seller_id, item.product_id].join(" · ");
+      if (state.view === "sellers") return [item.seller_type, item.disputes_last_90d + " disputes"].join(" · ");
+      if (state.view === "products") return [item.category, money(item.price_sgd)].join(" · ");
+      return "";
+    }
+    function esc(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+    }
+    init();
+  </script>
+</body>
+</html>

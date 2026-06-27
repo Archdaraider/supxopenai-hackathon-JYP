@@ -1,0 +1,150 @@
+[
+  {
+    "id": "P001",
+    "name": "Long-Sleeve Cotton Shirt",
+    "category": "Fashion",
+    "material": "cotton knit or woven fabric with stitched seams and cuffs",
+    "typical_failure_modes": [
+      "tears along seams or stress points",
+      "fraying around cuffs and hems",
+      "small punctures with pulled fabric"
+    ],
+    "price_sgd": 35,
+    "reference_image": "shirt_intact.jpg"
+  },
+  {
+    "id": "P002",
+    "name": "Tinted Motorcycle Helmet Visor",
+    "category": "Automotive Accessories",
+    "material": "tinted polycarbonate lens with anti-scratch coating",
+    "typical_failure_modes": [
+      "surface scratches that scatter light",
+      "edge chips from impact",
+      "cracks radiating from mounting points"
+    ],
+    "price_sgd": 65
+  },
+  {
+    "id": "P003",
+    "name": "Torriden Dive-In Skincare Set",
+    "category": "Beauty",
+    "material": "plastic cosmetic jars and tubes with cardboard retail packaging",
+    "typical_failure_modes": [
+      "cracked plastic jar or lid from compression",
+      "leakage from a broken seal",
+      "crushed or torn cardboard packaging"
+    ],
+    "price_sgd": 58
+  },
+  {
+    "id": "P004",
+    "name": "Custom Ceramic Photo Mug",
+    "category": "Home & Living",
+    "material": "glazed ceramic mug with printed polymer transfer",
+    "typical_failure_modes": [
+      "chips at the rim, handle, or base",
+      "cracks from impact or thermal stress",
+      "print transfer smudges or alignment defects"
+    ],
+    "price_sgd": 16
+  },
+  {
+    "id": "P005",
+    "name": "Clear Plastic Storage Container",
+    "category": "Home & Living",
+    "material": "transparent polypropylene plastic container with snap-on plastic lid",
+    "typical_failure_modes": [
+      "corner cracks or star fractures from impact",
+      "rim or lid-tab breaks from bending",
+      "stress whitening around cracked plastic"
+    ],
+    "price_sgd": 12
+  },
+  {
+    "id": "P006",
+    "name": "A4 Glass Photo Frame",
+    "category": "Home & Living",
+    "material": "glass pane in a synthetic leather frame",
+    "typical_failure_modes": [
+      "glass shatters into radiating cracks from impact",
+      "loose glass fragments inside the frame",
+      "chipped or split frame corners"
+    ],
+    "price_sgd": 18
+  },
+  {
+    "id": "P007",
+    "name": "Vention 4-Port USB Hub",
+    "category": "Electronics",
+    "material": "plastic and aluminium hub casing with USB-A ports and rubberized cable",
+    "typical_failure_modes": [
+      "USB connector shell bends or detaches",
+      "port housing cracks from insertion force",
+      "cable strain relief tears near the casing"
+    ],
+    "price_sgd": 25
+  },
+  {
+    "id": "P008",
+    "name": "Acer KA2 27-inch IPS Monitor",
+    "category": "Electronics",
+    "material": "LCD glass panel with plastic housing and metal stand",
+    "typical_failure_modes": [
+      "LCD panel cracks from impact or torsion",
+      "pressure damage causing display lines or black areas",
+      "stand or housing fracture during transit"
+    ],
+    "price_sgd": 189
+  },
+  {
+    "id": "P009",
+    "name": "Solid State Logic SSL 2 USB Audio Interface",
+    "category": "Audio",
+    "material": "aluminium chassis with plastic control knobs",
+    "typical_failure_modes": [
+      "knob cracks or pulls off the potentiometer shaft",
+      "scuffs, scratches, or dents on the metal faceplate",
+      "bent or damaged rear I/O connectors"
+    ],
+    "price_sgd": 399,
+    "reference_image": "ssl2_intact.jpg"
+  },
+  {
+    "id": "P010",
+    "name": "Calcifer Ceramic Figurine",
+    "category": "Collectibles",
+    "material": "painted ceramic figurine with narrow decorative protrusions",
+    "typical_failure_modes": [
+      "thin protrusions snap under impact",
+      "ceramic chips at raised edges",
+      "paint scuffs around impact points"
+    ],
+    "price_sgd": 42,
+    "reference_image": "calcifer_intact.jpg"
+  },
+  {
+    "id": "P011",
+    "name": "Nylon Commuter Backpack",
+    "category": "Bags & Wallets",
+    "material": "woven nylon shell with stitched seams and zipper hardware",
+    "typical_failure_modes": [
+      "fabric tears along load-bearing seams",
+      "zipper teeth or pullers break",
+      "abrasion on corners and bottom panel"
+    ],
+    "price_sgd": 72,
+    "reference_image": "backpack_intact.jpg"
+  },
+  {
+    "id": "P012",
+    "name": "Decorative Wall Frame",
+    "category": "Home & Living",
+    "material": "thin glass or acrylic pane with lightweight frame",
+    "typical_failure_modes": [
+      "pane cracks from corner impact",
+      "frame separates at mitred corners",
+      "surface scratches across clear panel"
+    ],
+    "price_sgd": 24
+  }
+]

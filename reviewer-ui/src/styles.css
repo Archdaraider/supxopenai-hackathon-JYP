@@ -1,0 +1,353 @@
+:root {
+  color-scheme: light;
+  --bg: #f4f5f2;
+  --ink: #171717;
+  --muted: #6b6f76;
+  --line: #d9ddd6;
+  --panel: #ffffff;
+  --panel2: #f8f9f6;
+  --green: #157a4c;
+  --amber: #a15c00;
+  --red: #b42336;
+  --teal: #0f766e;
+  --shadow: 0 14px 42px rgba(20, 25, 21, 0.09);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+button, a { font: inherit; }
+button { cursor: pointer; }
+
+.app { min-height: 100vh; padding: 18px; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 auto 16px;
+  max-width: 1680px;
+}
+
+.eyebrow, .sectionLabel {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+h1, h2, p { margin: 0; }
+h1 { font-size: 32px; letter-spacing: 0; }
+h2 { font-size: 28px; letter-spacing: 0; }
+
+.topActions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+.ghostLink, .runState {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,.72);
+  color: var(--ink);
+  min-height: 38px;
+  padding: 0 12px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.runState { color: var(--muted); font-weight: 650; }
+
+.workspace {
+  max-width: 1680px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 310px minmax(0, 1fr) 410px;
+  gap: 14px;
+  align-items: start;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.queue, .analysis { position: sticky; top: 18px; max-height: calc(100vh - 36px); overflow: auto; }
+
+.panelHeader, .analysisHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.caseList { display: grid; }
+
+.caseRow {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  padding: 13px 14px;
+}
+
+.caseRow:hover, .caseRow.active { background: #f1f5ef; }
+.caseRowTop { display: flex; justify-content: space-between; align-items: start; gap: 8px; font-weight: 800; }
+.caseTitle { margin-top: 7px; font-weight: 700; line-height: 1.28; }
+.caseMeta { margin-top: 5px; color: var(--muted); font-size: 12px; }
+
+.statusPill, .riskPill, .chip, .signalStatus {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  padding: 3px 7px;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.riskPill.low, .riskCard.low { color: #0f5132; background: #e7f4ec; border-color: #b9dfc8; }
+.riskPill.elevated, .riskCard.elevated { color: #7a3d00; background: #fff4dc; border-color: #f5d28b; }
+.riskPill.high, .riskCard.high { color: #842029; background: #fdecef; border-color: #f5b8c0; }
+
+.caseFile { padding: 18px; min-height: calc(100vh - 36px); }
+
+.caseHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px;
+  gap: 18px;
+  align-items: start;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+.chip { background: #f4f6f2; }
+
+.caseHero p, .claimCard p, .timeline p, .signalCard p, .actionCard p, .fact p, .preAnalysis p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.refundBox {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--panel2);
+  display: grid;
+  gap: 6px;
+}
+
+.refundBox span, .refundBox small { color: var(--muted); font-weight: 700; }
+.refundBox strong { font-size: 28px; }
+
+.evidenceGrid {
+  display: grid;
+  grid-template-columns: minmax(280px, 43%) minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.imageFrame {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f9faf8;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.imageFrame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.claimCard {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--panel2);
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.factsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.fact {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+  min-width: 0;
+}
+
+.fact span { color: var(--muted); font-size: 12px; font-weight: 800; }
+.fact strong { display: block; margin-top: 6px; overflow-wrap: anywhere; }
+.fact p { margin-top: 5px; font-size: 12px; }
+
+.timeline {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.timelineItem {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.timelineDot {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+
+.timelineItem span { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; font-weight: 700; }
+
+.analysis { padding-bottom: 12px; }
+.primaryButton {
+  min-height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: #22251f;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  font-weight: 800;
+}
+
+.primaryButton:disabled { opacity: .58; cursor: not-allowed; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.riskCard {
+  margin: 14px;
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.riskCard strong { font-size: 30px; }
+.scoreRing {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.74);
+  border: 1px solid currentColor;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.actionCard {
+  margin: 0 14px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  background: #f8f9f6;
+}
+
+.guardrails {
+  margin: 0 14px 12px;
+  display: grid;
+  gap: 6px;
+  color: #7a3d00;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.signalStack { display: grid; gap: 10px; padding: 0 14px; }
+.signalCard {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+}
+
+.signalHead { display: flex; justify-content: space-between; gap: 10px; align-items: start; }
+.signalTitle { display: inline-flex; gap: 8px; align-items: center; }
+.signalStatus.complete { color: #0f5132; background: #e7f4ec; }
+.signalStatus.not_configured { color: #7a3d00; background: #fff4dc; }
+.signalStatus.error { color: #842029; background: #fdecef; }
+
+.signalScore { margin: 12px 0 8px; display: flex; align-items: baseline; gap: 8px; }
+.signalScore span { font-size: 26px; font-weight: 900; }
+.signalScore small { color: var(--muted); font-weight: 700; }
+
+details { margin-top: 10px; color: var(--muted); }
+summary { cursor: pointer; font-weight: 800; color: var(--ink); }
+li { margin: 6px 0; }
+
+.preAnalysis {
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  padding: 28px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.preAnalysis strong { color: var(--ink); font-size: 18px; }
+.errorBanner {
+  max-width: 1680px;
+  margin: 0 auto 12px;
+  border: 1px solid #f5b8c0;
+  background: #fdecef;
+  color: #842029;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 1220px) {
+  .workspace { grid-template-columns: 280px minmax(0, 1fr); }
+  .analysis { grid-column: 1 / -1; position: static; max-height: none; }
+}
+
+@media (max-width: 820px) {
+  .app { padding: 10px; }
+  .topbar, .caseHero, .evidenceGrid, .workspace { grid-template-columns: 1fr; }
+  .topbar { display: grid; }
+  .queue { position: static; max-height: 340px; }
+  .factsGrid { grid-template-columns: 1fr; }
+}

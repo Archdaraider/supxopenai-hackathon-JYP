@@ -1,0 +1,552 @@
+[
+  {
+    "id": "C001",
+    "account_id": "A001",
+    "product_id": "P004",
+    "order_id": "ORD-3001",
+    "reason_category": "not_as_described",
+    "refund_request_description": "The custom mug arrived with the photo printed too small and slightly slanted. There are red smudges near the edge of the image, so I want a partial refund.",
+    "claim_text": "The custom mug arrived with the photo printed too small and slightly slanted. There are red smudges near the edge of the image, so I want a partial refund.",
+    "images": [
+      {
+        "image_id": "IMG-C001-1",
+        "filename": "mug_print_smudged.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "clean buyer; visible print-quality issue is plausible and low value",
+      "expected_band": "Low",
+      "why": "clean buyer; visible print-quality issue is plausible and low value",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C002",
+    "account_id": "A002",
+    "product_id": "P006",
+    "order_id": "ORD-3002",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "The frame arrived cracked across the front. Seller says it was fine before shipping, but the item was broken when I opened it.",
+    "claim_text": "The frame arrived cracked across the front. Seller says it was fine before shipping, but the item was broken when I opened it.",
+    "images": [
+      {
+        "image_id": "IMG-C002-1",
+        "filename": "frame_shattered.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "new account with repeat claims; damage appears plausible so behaviour only should not force High",
+      "expected_band": "Elevated",
+      "why": "new account with repeat claims; damage appears plausible so behaviour only should not force High",
+      "expected_outcome_label": "fraudulent"
+    }
+  },
+  {
+    "id": "C003",
+    "account_id": "A003",
+    "product_id": "P002",
+    "order_id": "ORD-3003",
+    "reason_category": "not_as_described",
+    "refund_request_description": "The visor came scratched and the tint is not the colour shown in the listing. Seller refused refund and says colour variation is normal.",
+    "claim_text": "The visor came scratched and the tint is not the colour shown in the listing. Seller refused refund and says colour variation is normal.",
+    "images": [
+      {
+        "image_id": "IMG-C003-1",
+        "filename": "visor_scratched_wrong_color.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "established buyer with plausible condition mismatch",
+      "expected_band": "Low",
+      "why": "established buyer with plausible condition mismatch",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C004",
+    "account_id": "A004",
+    "product_id": "P003",
+    "order_id": "ORD-3004",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "The skincare box arrived crushed and opened at the side. I am asking for a small refund because the set was bought as a gift.",
+    "claim_text": "The skincare box arrived crushed and opened at the side. I am asking for a small refund because the set was bought as a gift.",
+    "images": [
+      {
+        "image_id": "IMG-C004-1",
+        "filename": "skincare_packaging_damaged.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "clean account; packaging issue may need policy review but not integrity escalation",
+      "expected_band": "Low",
+      "why": "clean account; packaging issue may need policy review but not integrity escalation",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C005",
+    "account_id": "A005",
+    "product_id": "P003",
+    "order_id": "ORD-3005",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "The entire skincare set arrived damaged and I want 50 percent refund without returning it because the seller packed it badly.",
+    "claim_text": "The entire skincare set arrived damaged and I want 50 percent refund without returning it because the seller packed it badly.",
+    "images": [
+      {
+        "image_id": "IMG-C005-1",
+        "filename": "skincare_boxes_cracked.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "high refund rate and partial-refund request; image is unique so no hard image-reuse flag",
+      "expected_band": "Elevated",
+      "why": "high refund rate and partial-refund request; image is unique so no hard image-reuse flag",
+      "expected_outcome_label": "fraudulent"
+    }
+  },
+  {
+    "id": "C006",
+    "account_id": "A006",
+    "product_id": "P010",
+    "order_id": "ORD-3006",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "The figurine arrived with a piece broken off. Seller says I probably dropped it after delivery, but it was already like this in the parcel.",
+    "claim_text": "The figurine arrived with a piece broken off. Seller says I probably dropped it after delivery, but it was already like this in the parcel.",
+    "images": [
+      {
+        "image_id": "IMG-C006-1",
+        "filename": "calcifer_broken.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "established collector; fragile ceramic break is plausible",
+      "expected_band": "Low",
+      "why": "established collector; fragile ceramic break is plausible",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C007",
+    "account_id": "A007",
+    "product_id": "P005",
+    "order_id": "ORD-3007",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "One storage container came cracked and dirty on the side. Seller says all three were packed together, but I need refund for this one.",
+    "claim_text": "One storage container came cracked and dirty on the side. Seller says all three were packed together, but I need refund for this one.",
+    "images": [
+      {
+        "image_id": "IMG-C007-1",
+        "filename": "plastic_container_side_crack.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "same shipment cluster should route to logistics/fulfilment",
+      "expected_band": "Low",
+      "why": "same shipment cluster should route to logistics/fulfilment",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C008",
+    "account_id": "A007",
+    "product_id": "P005",
+    "order_id": "ORD-3007",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "Second container lid has a crack near the rim. This came in the same delivery as the other damaged boxes.",
+    "claim_text": "Second container lid has a crack near the rim. This came in the same delivery as the other damaged boxes.",
+    "images": [
+      {
+        "image_id": "IMG-C008-1",
+        "filename": "plastic_container_lid_crack_closeup.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "same shipment cluster should lower buyer-integrity risk",
+      "expected_band": "Low",
+      "why": "same shipment cluster should lower buyer-integrity risk",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C009",
+    "account_id": "A007",
+    "product_id": "P005",
+    "order_id": "ORD-3007",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "Third container lid also came cracked. Photo is blurry but all were damaged in one parcel.",
+    "claim_text": "Third container lid also came cracked. Photo is blurry but all were damaged in one parcel.",
+    "images": [
+      {
+        "image_id": "IMG-C009-1",
+        "filename": "plastic_container_lid_crack_blurry.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "same shipment cluster plus evidence sufficiency issue",
+      "expected_band": "Low",
+      "why": "same shipment cluster plus evidence sufficiency issue",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C010",
+    "account_id": "A008",
+    "product_id": "P006",
+    "order_id": "ORD-3008",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "Glass frame came completely shattered. I threw away the packaging already but want refund because it was definitely broken on arrival.",
+    "claim_text": "Glass frame came completely shattered. I threw away the packaging already but want refund because it was definitely broken on arrival.",
+    "images": [
+      {
+        "image_id": "IMG-C010-1",
+        "filename": "glass_frame_shattered_handheld.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "new account with high claim velocity; plausible damage but missing packaging context",
+      "expected_band": "Elevated",
+      "why": "new account with high claim velocity; plausible damage but missing packaging context",
+      "expected_outcome_label": "fraudulent"
+    }
+  },
+  {
+    "id": "C011",
+    "account_id": "A009",
+    "product_id": "P006",
+    "order_id": "ORD-3009",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "Frame was shattered inside the packaging with loose glass pieces. Seller rejected refund and said courier mishandled it.",
+    "claim_text": "Frame was shattered inside the packaging with loose glass pieces. Seller rejected refund and said courier mishandled it.",
+    "images": [
+      {
+        "image_id": "IMG-C011-1",
+        "filename": "glass_frame_shattered_packaging.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "established buyer; fragile item transit damage is plausible",
+      "expected_band": "Low",
+      "why": "established buyer; fragile item transit damage is plausible",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C012",
+    "account_id": "A010",
+    "product_id": "P007",
+    "order_id": "ORD-3010",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "One USB port came bare and casing is damaged. It is not working, not only cosmetic. I want refund without return because it is cheap.",
+    "claim_text": "One USB port came bare and casing is damaged. It is not working, not only cosmetic. I want refund without return because it is cheap.",
+    "images": [
+      {
+        "image_id": "IMG-C012-1",
+        "filename": "usb_hub_port_cracked.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "new account with repeated electronics claims and no hard image signal",
+      "expected_band": "Elevated",
+      "why": "new account with repeated electronics claims and no hard image signal",
+      "expected_outcome_label": "fraudulent"
+    }
+  },
+  {
+    "id": "C013",
+    "account_id": "A011",
+    "product_id": "P007",
+    "order_id": "ORD-3011",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "The USB connector broke before first use. Seller says I forced it, but it arrived loose in the packaging.",
+    "claim_text": "The USB connector broke before first use. Seller says I forced it, but it arrived loose in the packaging.",
+    "images": [
+      {
+        "image_id": "IMG-C013-1",
+        "filename": "usb_hub_connector_broken.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "clean buyer; connector break is plausible",
+      "expected_band": "Low",
+      "why": "clean buyer; connector break is plausible",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C014",
+    "account_id": "A012",
+    "product_id": "P008",
+    "order_id": "ORD-3012",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "Monitor screen was cracked when I opened the box. Seller says I opened too late, but it came this way and I want refund.",
+    "claim_text": "Monitor screen was cracked when I opened the box. Seller says I opened too late, but it came this way and I want refund.",
+    "images": [
+      {
+        "image_id": "IMG-C014-1",
+        "filename": "monitor_packaging_cracked.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "new account and high-value item; plausible LCD damage so request evidence rather than High",
+      "expected_band": "Elevated",
+      "why": "new account and high-value item; plausible LCD damage so request evidence rather than High",
+      "expected_outcome_label": "fraudulent"
+    }
+  },
+  {
+    "id": "C015",
+    "account_id": "A013",
+    "product_id": "P008",
+    "order_id": "ORD-3013",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "Acer monitor has a large screen crack straight out of the box. I need a cash refund because warranty will not cover it.",
+    "claim_text": "Acer monitor has a large screen crack straight out of the box. I need a cash refund because warranty will not cover it.",
+    "images": [
+      {
+        "image_id": "IMG-C015-1",
+        "filename": "monitor_office_cracked.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "risky account and high-value electronics claim",
+      "expected_band": "Elevated",
+      "why": "risky account and high-value electronics claim",
+      "expected_outcome_label": "fraudulent"
+    }
+  },
+  {
+    "id": "C016",
+    "account_id": "A013",
+    "product_id": "P008",
+    "order_id": "ORD-3014",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "Second photo shows the same damaged monitor on my desk. Seller rejected refund and says it was damaged after delivery.",
+    "claim_text": "Second photo shows the same damaged monitor on my desk. Seller rejected refund and says it was damaged after delivery.",
+    "images": [
+      {
+        "image_id": "IMG-C016-1",
+        "filename": "monitor_desktop_cracked.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "supporting evidence for risky monitor dispute; unique image, no reuse",
+      "expected_band": "Elevated",
+      "why": "supporting evidence for risky monitor dispute; unique image, no reuse",
+      "expected_outcome_label": "fraudulent"
+    }
+  },
+  {
+    "id": "C017",
+    "account_id": "A014",
+    "product_id": "P009",
+    "order_id": "ORD-3015",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "The audio interface arrived with the monitor knob snapped off and the top panel cracked all around it.",
+    "claim_text": "The audio interface arrived with the monitor knob snapped off and the top panel cracked all around it.",
+    "images": [
+      {
+        "image_id": "IMG-C017-1",
+        "filename": "ssl2_broken.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "high-value item; physical plausibility should be questioned because aluminium usually dents or scuffs rather than cracking radially",
+      "expected_band": "High",
+      "why": "high-value item; physical plausibility should be questioned because aluminium usually dents or scuffs rather than cracking radially",
+      "expected_outcome_label": "fraudulent"
+    }
+  },
+  {
+    "id": "C018",
+    "account_id": "A015",
+    "product_id": "P001",
+    "order_id": "ORD-3016",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "The shirt sleeve arrived with a large rip near the cuff. Seller says it is wear and tear, but I noticed it immediately.",
+    "claim_text": "The shirt sleeve arrived with a large rip near the cuff. Seller says it is wear and tear, but I noticed it immediately.",
+    "images": [
+      {
+        "image_id": "IMG-C018-1",
+        "filename": "shirt_black_sleeve_rip.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "established buyer; textile tear is plausible",
+      "expected_band": "Low",
+      "why": "established buyer; textile tear is plausible",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C019",
+    "account_id": "A016",
+    "product_id": "P011",
+    "order_id": "ORD-3017",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "The backpack seam tore open on arrival before I used it. Seller says bags are checked before shipping.",
+    "claim_text": "The backpack seam tore open on arrival before I used it. Seller says bags are checked before shipping.",
+    "images": [
+      {
+        "image_id": "IMG-C019-1",
+        "filename": "backpack_torn.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "established buyer; seam tear plausible",
+      "expected_band": "Low",
+      "why": "established buyer; seam tear plausible",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C020",
+    "account_id": "A017",
+    "product_id": "P001",
+    "order_id": "ORD-3018",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "The shirt fabric is torn near the side. I want a partial refund because seller does not want to accept return.",
+    "claim_text": "The shirt fabric is torn near the side. I want a partial refund because seller does not want to accept return.",
+    "images": [
+      {
+        "image_id": "IMG-C020-1",
+        "filename": "shirt_torn.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "clean buyer; plausible apparel damage",
+      "expected_band": "Low",
+      "why": "clean buyer; plausible apparel damage",
+      "expected_outcome_label": "legitimate"
+    }
+  },
+  {
+    "id": "C021",
+    "account_id": "A019",
+    "product_id": "P002",
+    "order_id": "ORD-3019",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "Helmet visor lens has a scratch across the front and blocks my view. Seller says scratches happened after delivery.",
+    "claim_text": "Helmet visor lens has a scratch across the front and blocks my view. Seller says scratches happened after delivery.",
+    "images": [
+      {
+        "image_id": "IMG-C021-1",
+        "filename": "visor_lens_scratch.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "repeat claims and accessory dispute; plausible damage",
+      "expected_band": "Elevated",
+      "why": "repeat claims and accessory dispute; plausible damage",
+      "expected_outcome_label": "fraudulent"
+    }
+  },
+  {
+    "id": "C022",
+    "account_id": "A020",
+    "product_id": "P003",
+    "order_id": "ORD-3020",
+    "reason_category": "damaged_or_faulty",
+    "refund_request_description": "The moisturiser jar arrived cracked at the lid. I want refund because product may leak.",
+    "claim_text": "The moisturiser jar arrived cracked at the lid. I want refund because product may leak.",
+    "images": [
+      {
+        "image_id": "IMG-C022-1",
+        "filename": "skincare_jar_cracked_closeup.jpg",
+        "role": "claim_evidence",
+        "metadata_status": "stripped",
+        "source": "buyer_upload",
+        "capture_context": "item_damage"
+      }
+    ],
+    "_dev": {
+      "scenario_role": "established buyer; cracked plastic jar plausible",
+      "expected_band": "Low",
+      "why": "established buyer; cracked plastic jar plausible",
+      "expected_outcome_label": "legitimate"
+    }
+  }
+]
