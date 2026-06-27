@@ -1,10 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   AlertTriangle,
-  BadgeCheck,
+  ArrowLeft,
+  BarChart3,
   ChevronLeft,
   ChevronRight,
+  CheckCircle2,
+  Clock3,
   X,
   ClipboardList,
   Copy,
@@ -12,24 +15,42 @@ import {
   ExternalLink,
   FileSearch,
   Loader2,
+  MessageSquare,
+  RefreshCw,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
-  Truck
+  Truck,
+  XCircle
 } from "lucide-react";
 import { analyzeCase, datasetDashboardUrl, fetchCases, imageUrl } from "./api";
-import type { AnalysisResult, GalleryImage, ReviewCase, SignalResult } from "./types";
+import type { AnalysisResult, GalleryImage, ReviewCase, RiskLevel, SignalResult } from "./types";
 import "./styles.css";
 
 type CaseWithAnalysis = ReviewCase;
+type ViewMode = "dashboard" | "review";
+type QueueFilter = "all" | "unanalysed" | "resubmission" | "time_sensitive" | "elevated" | "manual";
+
+interface CaseActionLog {
+  type: "request_evidence" | "approve_refund" | "reject_refund" | "open_buyer_chat" | "open_seller_chat";
+  label: string;
+  detail: string;
+  createdAt: string;
+}
 
 function App() {
+  const [authenticated, setAuthenticated] = useState(false);
   const [cases, setCases] = useState<CaseWithAnalysis[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
+  const [queueFilter, setQueueFilter] = useState<QueueFilter>("all");
   const [analysisByCase, setAnalysisByCase] = useState<Record<string, AnalysisResult>>({});
+  const [manualByCase, setManualByCase] = useState<Record<string, ManualFallbackResult | null>>({});
+  const [actionLogByCase, setActionLogByCase] = useState<Record<string, CaseActionLog[]>>({});
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const analysisRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     fetchCases()
@@ -41,8 +62,43 @@ function App() {
       .finally(() => setLoading(false));
   }, []);
 
-  const selected = useMemo(() => cases.find((item) => item.id === selectedId) ?? cases[0], [cases, selectedId]);
+  const displayedCases = useMemo(
+    () => cases.filter((item, index) => matchesQueueFilter(item, index, queueFilter, analysisByCase, manualByCase, actionLogByCase)),
+    [cases, queueFilter, analysisByCase, manualByCase, actionLogByCase]
+  );
+  const selected = useMemo(() => {
+    const source = viewMode === "review" && displayedCases.length ? displayedCases : cases;
+    return source.find((item) => item.id === selectedId) ?? source[0];
+  }, [cases, displayedCases, selectedId, viewMode]);
   const selectedAnalysis = selected ? analysisByCase[selected.id] : null;
+  const selectedManual = selected ? manualByCase[selected.id] : null;
+
+  useEffect(() => {
+    if (viewMode !== "review") return;
+    if (!displayedCases.length) {
+      setSelectedId(null);
+      return;
+    }
+    if (!displayedCases.some((item) => item.id === selectedId)) {
+      setSelectedId(displayedCases[0].id);
+    }
+  }, [displayedCases, selectedId, viewMode]);
+
+  if (!authenticated) return <LoginScreen onLogin={() => setAuthenticated(true)} />;
+
+  function openReview(filter: QueueFilter = "all", caseId?: string) {
+    setQueueFilter(filter);
+    if (caseId) setSelectedId(caseId);
+    setViewMode("review");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function recordAction(caseId: string, action: CaseActionLog) {
+    setActionLogByCase((current) => ({
+      ...current,
+      [caseId]: [action, ...(current[caseId] ?? [])].slice(0, 6)
+    }));
+  }
 
   async function runAnalysis() {
     if (!selected) return;
@@ -51,6 +107,8 @@ function App() {
     try {
       const analysis = await analyzeCase(selected.id);
       setAnalysisByCase((current) => ({ ...current, [selected.id]: analysis }));
+      setManualByCase((current) => ({ ...current, [selected.id]: null }));
+      window.setTimeout(() => analysisRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Analysis failed");
     } finally {
@@ -63,55 +121,84 @@ function App() {
       <header className="topbar">
         <div>
           <div className="eyebrow">Carousell Trust & Safety</div>
-          <h1>Refund Claim Reviewer</h1>
+          <h1>Claim Integrity Agent <span>by PJAY</span></h1>
         </div>
         <div className="topActions">
+          {viewMode === "review" ? (
+            <button className="ghostButton" type="button" onClick={() => setViewMode("dashboard")}>
+              <ArrowLeft size={16} />
+              Dashboard
+            </button>
+          ) : null}
           <a className="ghostLink" href={datasetDashboardUrl} target="_blank" rel="noreferrer">
             <Database size={16} />
             Dataset Viewer
           </a>
           <div className="runState">
-            {selectedAnalysis ? `Last analyzed ${new Date(selectedAnalysis.generatedAt).toLocaleTimeString()}` : "Analysis not run"}
+            {selectedManual ? "Manual fallback applied" : selectedAnalysis ? `Last analyzed ${new Date(selectedAnalysis.generatedAt).toLocaleTimeString()}` : "Analysis not run"}
           </div>
         </div>
       </header>
 
       {error ? <div className="errorBanner">{error}</div> : null}
 
+      {viewMode === "dashboard" ? (
+        <OperationsDashboard
+          cases={cases}
+          loading={loading}
+          analysisByCase={analysisByCase}
+          manualByCase={manualByCase}
+          actionLogByCase={actionLogByCase}
+          onOpenReview={openReview}
+        />
+      ) : (
       <main className="workspace">
-        <aside className="queue panel">
-          <div className="panelHeader">
-            <div>
-              <div className="sectionLabel">Escalated Cases</div>
-              <strong>{loading ? "Loading..." : `${cases.length} disputes`}</strong>
+        <div className="reviewToolbar">
+          <div>
+            <div className="sectionLabel">Case Review</div>
+            <strong>{queueTitle(queueFilter)}</strong>
+            <span>{displayedCases.length} case{displayedCases.length === 1 ? "" : "s"} in this view</span>
+          </div>
+          <button className="ghostButton" type="button" onClick={() => openReview("all")}>Clear filter</button>
+        </div>
+        <div className="topWorkspace">
+          <aside className="queue panel">
+            <div className="panelHeader">
+              <div>
+                <div className="sectionLabel">Escalated Cases</div>
+                <strong>{loading ? "Loading..." : `${displayedCases.length} disputes`}</strong>
+              </div>
             </div>
-          </div>
-          <div className="caseList">
-            {cases.map((item) => {
-              const analysis = analysisByCase[item.id];
-              return (
-                <button
-                  key={item.id}
-                  className={`caseRow ${item.id === selected?.id ? "active" : ""}`}
-                  onClick={() => setSelectedId(item.id)}
-                >
-                  <div className="caseRowTop">
-                    <span>{item.id}</span>
-                    {analysis ? <RiskPill level={analysis.finalRiskLevel} /> : <span className="statusPill">Ready</span>}
-                  </div>
-                  <div className="caseTitle">{item.product.name}</div>
-                  <div className="caseMeta">{item.buyer.user_profile_badge} · S${item.order.refund_amount_requested_sgd}</div>
-                </button>
-              );
-            })}
-          </div>
-        </aside>
+            <div className="caseList">
+              {displayedCases.map((item) => {
+                const manual = manualByCase[item.id];
+                const analysis = analysisByCase[item.id];
+                const visibleRisk = manual?.finalRiskLevel || analysis?.finalRiskLevel;
+                return (
+                  <button
+                    key={item.id}
+                    className={`caseRow ${item.id === selected?.id ? "active" : ""}`}
+                    onClick={() => setSelectedId(item.id)}
+                  >
+                    <div className="caseRowTop">
+                      <span>{item.id}</span>
+                      {visibleRisk ? <RiskPill level={visibleRisk} /> : <span className="statusPill">Ready</span>}
+                    </div>
+                    <div className="caseTitle">{item.product.name}</div>
+                    <div className="caseMeta">{item.buyer.user_profile_badge} · S${item.order.refund_amount_requested_sgd}{manual ? " · manual fallback" : ""}</div>
+                  </button>
+                );
+              })}
+              {!displayedCases.length ? <div className="queueEmpty">No cases match this queue.</div> : null}
+            </div>
+          </aside>
 
-        <section className="caseFile panel">
-          {selected ? <CaseFile reviewCase={selected} /> : <EmptyState />}
-        </section>
+          <section className="caseFile panel">
+            {selected ? <CaseFile reviewCase={selected} /> : <EmptyState />}
+          </section>
+        </div>
 
-        <aside className="analysis panel">
+        <section className="analysis panel" ref={analysisRef}>
           <div className="analysisHeader">
             <div>
               <div className="sectionLabel">Reviewer Decision Support</div>
@@ -122,10 +209,242 @@ function App() {
               Run analysis
             </button>
           </div>
-          {selected && selectedAnalysis ? <AnalysisPanel analysis={selectedAnalysis} reviewCase={selected} /> : <PreAnalysis />}
-        </aside>
+          {selected && selectedAnalysis ? (
+            <AnalysisPanel
+              analysis={selectedAnalysis}
+              reviewCase={selected}
+              manualResult={selectedManual || null}
+              onManualApply={(result) => {
+                setManualByCase((current) => ({ ...current, [selected.id]: result }));
+                window.setTimeout(() => analysisRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+              }}
+              actionLog={actionLogByCase[selected.id] ?? []}
+              onAction={(action) => recordAction(selected.id, action)}
+            />
+          ) : <PreAnalysis />}
+        </section>
       </main>
+      )}
     </div>
+  );
+}
+
+function OperationsDashboard({
+  cases,
+  loading,
+  analysisByCase,
+  manualByCase,
+  actionLogByCase,
+  onOpenReview
+}: {
+  cases: ReviewCase[];
+  loading: boolean;
+  analysisByCase: Record<string, AnalysisResult>;
+  manualByCase: Record<string, ManualFallbackResult | null>;
+  actionLogByCase: Record<string, CaseActionLog[]>;
+  onOpenReview: (filter?: QueueFilter, caseId?: string) => void;
+}) {
+  const metrics = useMemo(
+    () => buildDashboardMetrics(cases, analysisByCase, manualByCase, actionLogByCase),
+    [cases, analysisByCase, manualByCase, actionLogByCase]
+  );
+  const priorityCases = useMemo(
+    () => cases
+      .map((item, index) => ({ item, index, score: priorityScore(item, index, analysisByCase, manualByCase, actionLogByCase) }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5),
+    [cases, analysisByCase, manualByCase, actionLogByCase]
+  );
+
+  return (
+    <main className="opsDashboard">
+      <section className="opsHero panel">
+        <div>
+          <div className="sectionLabel">Reviewer queue</div>
+          <h2>Operations dashboard</h2>
+          <p>Presentation queue for escalated Carousell refund disputes. Metrics are computed from the local test dataset and frontend demo state.</p>
+        </div>
+        <button className="startReviewButton" type="button" onClick={() => onOpenReview("all")}>
+          <FileSearch size={19} />
+          Start case review
+        </button>
+      </section>
+
+      <section className="opsCards" aria-label="Queue metrics">
+        <MetricCard
+          icon={<ClipboardList size={24} />}
+          label="Tickets left for analysis"
+          value={loading ? "..." : metrics.unanalysed}
+          detail="No live analysis run yet"
+          tone="dark"
+          onClick={() => onOpenReview("unanalysed")}
+        />
+        <MetricCard
+          icon={<RefreshCw size={24} />}
+          label="Ready for re-submission"
+          value={loading ? "..." : metrics.resubmission}
+          detail="Buyer supplied or likely needs more evidence"
+          tone="green"
+          onClick={() => onOpenReview("resubmission")}
+        />
+        <MetricCard
+          icon={<Clock3 size={24} />}
+          label="Time sensitive"
+          value={loading ? "..." : metrics.timeSensitive}
+          detail="Demo queue over 7 unresolved days"
+          tone="amber"
+          onClick={() => onOpenReview("time_sensitive")}
+        />
+        <MetricCard
+          icon={<ShieldAlert size={24} />}
+          label="Elevated review queue"
+          value={loading ? "..." : metrics.elevated}
+          detail="Higher risk or uncertain decision support"
+          tone="red"
+          onClick={() => onOpenReview("elevated")}
+        />
+        <MetricCard
+          icon={<Sparkles size={24} />}
+          label="Manual fallback needed"
+          value={loading ? "..." : metrics.manual}
+          detail="AI-image ambiguity needs reviewer check"
+          tone="blue"
+          onClick={() => onOpenReview("manual")}
+        />
+      </section>
+
+      <section className="opsLower">
+        <div className="panel priorityPanel">
+          <div className="panelHeader">
+            <div>
+              <div className="sectionLabel">Priority Queue</div>
+              <strong>Suggested next tickets</strong>
+            </div>
+            <button className="ghostButton" type="button" onClick={() => onOpenReview("all")}>View all</button>
+          </div>
+          <div className="priorityList">
+            {priorityCases.map(({ item, index }) => {
+              const visibleRisk = manualByCase[item.id]?.finalRiskLevel || analysisByCase[item.id]?.finalRiskLevel;
+              return (
+                <button className="priorityRow" type="button" key={item.id} onClick={() => onOpenReview("all", item.id)}>
+                  <div className="priorityImage">
+                    {item.primaryImage ? <img src={imageUrl(item.primaryImage.filename)} alt="" /> : <BarChart3 size={18} />}
+                  </div>
+                  <div>
+                    <strong>{item.product.name}</strong>
+                    <span>{item.buyer.display_name} vs {item.seller.display_name}</span>
+                    <small>{dashboardReason(item, index, analysisByCase, manualByCase, actionLogByCase)}</small>
+                  </div>
+                  {visibleRisk ? <RiskPill level={visibleRisk} /> : <span className="statusPill">Ready</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="panel opsNotes">
+          <div className="sectionLabel">Today</div>
+          <strong>Reviewer focus</strong>
+          <div className="focusList">
+            <div><CheckCircle2 size={17} /><span>Run analysis before making a refund decision.</span></div>
+            <div><MessageSquare size={17} /><span>Use CTA buttons to show buyer or seller follow-up flow.</span></div>
+            <div><AlertTriangle size={17} /><span>Manual fallback is reserved for ambiguous AI-image signals.</span></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function MetricCard({
+  icon,
+  label,
+  value,
+  detail,
+  tone,
+  onClick
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+  detail: string;
+  tone: "dark" | "green" | "amber" | "red" | "blue";
+  onClick: () => void;
+}) {
+  return (
+    <button className={`metricCard ${tone}`} type="button" onClick={onClick}>
+      <span className="metricIcon">{icon}</span>
+      <strong>{value}</strong>
+      <span>{label}</span>
+      <small>{detail}</small>
+    </button>
+  );
+}
+
+function LoginScreen({ onLogin }: { onLogin: () => void }) {
+  const [reviewerId, setReviewerId] = useState("reviewer@carousell.demo");
+  const [passcode, setPasscode] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [verified, setVerified] = useState(false);
+
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setVerifying(true);
+    window.setTimeout(() => {
+      setVerifying(false);
+      setVerified(true);
+      window.setTimeout(onLogin, 520);
+    }, 760);
+  }
+
+  return (
+    <main className="loginPage">
+      <div className="loginBackdrop" />
+      <section className="loginShell" aria-label="Carousell reviewer login">
+        <div className="loginNarrative">
+          <div className="loginBadge">Carousell reviewer access</div>
+          <h1>Making secondhand the first choice</h1>
+          <div className="loginProductTitle">
+            <strong>Claim Integrity Agent</strong>
+            <span>by PJAY</span>
+          </div>
+          <p>Reviewer tools for checking buyer claims, seller context, evidence images, AI-image signals, and manual fallback notes from one controlled workspace.</p>
+          <div className="loginMetrics">
+            <div><strong>22</strong><span>test disputes</span></div>
+            <div><strong>4</strong><span>signal groups</span></div>
+            <div><strong>0</strong><span>auto rejections</span></div>
+          </div>
+        </div>
+
+        <form className="loginCard" onSubmit={submit}>
+          <div className="loginCardTop">
+            <div>
+              <span>Reviewer portal</span>
+              <strong>Demo sign in</strong>
+            </div>
+            <div className="loginStatus">{verified ? "Verified" : verifying ? "Checking" : "Local demo"}</div>
+          </div>
+
+          <label>
+            Reviewer ID
+            <input value={reviewerId} onChange={(event) => setReviewerId(event.target.value)} />
+          </label>
+          <label>
+            Verification code
+            <input value={passcode} onChange={(event) => setPasscode(event.target.value)} placeholder="Any code works" />
+          </label>
+
+          <button className="loginButton" type="submit" disabled={verifying}>
+            {verifying ? <Loader2 className="spin" size={18} /> : <ShieldCheck size={18} />}
+            {verified ? "Opening workspace" : verifying ? "Verifying reviewer" : "Verify and continue"}
+          </button>
+
+          <div className="loginFineprint">
+            Dummy verification for presentation. No external authentication is called.
+          </div>
+        </form>
+      </section>
+    </main>
   );
 }
 
@@ -300,8 +619,21 @@ interface ManualFallbackResult {
   parsed: Array<{ source: string; score: number | null; text: string }>;
 }
 
-function AnalysisPanel({ analysis, reviewCase }: { analysis: AnalysisResult; reviewCase: ReviewCase }) {
-  const [manualResult, setManualResult] = useState<ManualFallbackResult | null>(null);
+function AnalysisPanel({
+  analysis,
+  reviewCase,
+  manualResult,
+  onManualApply,
+  actionLog,
+  onAction
+}: {
+  analysis: AnalysisResult;
+  reviewCase: ReviewCase;
+  manualResult: ManualFallbackResult | null;
+  onManualApply: (result: ManualFallbackResult | null) => void;
+  actionLog: CaseActionLog[];
+  onAction: (action: CaseActionLog) => void;
+}) {
   const displayed = manualResult
     ? {
       finalRiskScore: manualResult.finalRiskScore,
@@ -340,7 +672,129 @@ function AnalysisPanel({ analysis, reviewCase }: { analysis: AnalysisResult; rev
       <div className="signalStack">
         {analysis.signals.map((signal) => <SignalCard key={signal.key} signal={signal} />)}
       </div>
-      <ManualAiCheck reviewCase={reviewCase} baseAnalysis={analysis} onApply={setManualResult} />
+      <ManualAiCheck reviewCase={reviewCase} baseAnalysis={analysis} onApply={onManualApply} />
+      <ReviewerDecisionActions
+        reviewCase={reviewCase}
+        finalRiskLevel={displayed.finalRiskLevel}
+        actionLog={actionLog}
+        onAction={onAction}
+      />
+    </div>
+  );
+}
+
+function ReviewerDecisionActions({
+  reviewCase,
+  finalRiskLevel,
+  actionLog,
+  onAction
+}: {
+  reviewCase: ReviewCase;
+  finalRiskLevel: RiskLevel;
+  actionLog: CaseActionLog[];
+  onAction: (action: CaseActionLog) => void;
+}) {
+  const [rejectReason, setRejectReason] = useState("Damage not supported by submitted evidence");
+  const [chatTarget, setChatTarget] = useState<"buyer" | "seller" | null>(null);
+  const reasons = [
+    "Damage not supported by submitted evidence",
+    "Item materially matches the listing",
+    "Surface wear and tear does not affect functionality",
+    "Issue appears outside the dispute window",
+    "Claim concerns packaging only; item damage not shown",
+    "Missing required return or evidence"
+  ];
+
+  function addAction(type: CaseActionLog["type"], label: string, detail: string) {
+    onAction({ type, label, detail, createdAt: new Date().toISOString() });
+  }
+
+  function requestMoreEvidence() {
+    setChatTarget("buyer");
+    addAction(
+      "request_evidence",
+      "Requested more buyer evidence",
+      "Opened buyer chat with a request for clearer damage photos, packaging photos, and short unboxing context."
+    );
+  }
+
+  function approveRefund() {
+    addAction(
+      "approve_refund",
+      "Approved refund",
+      `Seller notification queued for S$${reviewCase.order.refund_amount_requested_sgd}.`
+    );
+  }
+
+  function rejectRefund() {
+    addAction("reject_refund", "Rejected refund with reason", rejectReason);
+  }
+
+  function openSellerChat() {
+    setChatTarget("seller");
+    addAction("open_seller_chat", "Opened seller chat", "Prepared seller follow-up message for dispute context.");
+  }
+
+  return (
+    <div className="decisionPanel">
+      <div className="decisionTop">
+        <div>
+          <div className="sectionLabel">Final reviewer step</div>
+          <strong>Choose dispute outcome</strong>
+          <p>Record the reviewer decision or open the relevant chat follow-up for this escalated refund claim.</p>
+        </div>
+        <RiskPill level={finalRiskLevel} />
+      </div>
+
+      <div className="decisionGrid">
+        <button type="button" className="evidenceDecision" onClick={requestMoreEvidence}>
+          <MessageSquare size={18} />
+          Request buyer evidence
+        </button>
+        <button type="button" className="approveDecision" onClick={approveRefund}>
+          <CheckCircle2 size={18} />
+          Approve refund
+        </button>
+        <div className="rejectDecision">
+          <select value={rejectReason} onChange={(event) => setRejectReason(event.target.value)}>
+            {reasons.map((reason) => <option key={reason}>{reason}</option>)}
+          </select>
+          <button type="button" onClick={rejectRefund}>
+            <XCircle size={18} />
+            Reject with selected reason
+          </button>
+        </div>
+        <button type="button" className="sellerDecision" onClick={openSellerChat}>
+          <MessageSquare size={18} />
+          Message seller
+        </button>
+      </div>
+
+      {chatTarget ? (
+        <div className="chatComposer">
+          <div>
+            <strong>{chatTarget === "buyer" ? `Buyer chat: ${reviewCase.buyer.display_name}` : `Seller chat: ${reviewCase.seller.display_name}`}</strong>
+            <button type="button" onClick={() => setChatTarget(null)}>Close</button>
+          </div>
+          <textarea
+            readOnly
+            value={chatTarget === "buyer"
+              ? `Hi ${reviewCase.buyer.display_name}, thanks for escalating this refund claim. To complete review, please send: 1) a wider photo of the item, 2) close-up of the crack or chip, 3) packaging condition, and 4) when the damage was first noticed.`
+              : `Hi ${reviewCase.seller.display_name}, we are reviewing the buyer's claim for ${reviewCase.product.name}. Please share any packing photos, pre-shipment condition evidence, or context that helps assess the reported damage.`}
+          />
+        </div>
+      ) : null}
+
+      {actionLog.length ? (
+        <div className="actionLog">
+          {actionLog.map((entry) => (
+            <div key={`${entry.createdAt}-${entry.label}`}>
+              <strong>{entry.label}</strong>
+              <span>{new Date(entry.createdAt).toLocaleTimeString()} · {entry.detail}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -357,16 +811,37 @@ function ManualAiCheck({
   const [chatgptResult, setChatgptResult] = useState("");
   const [geminiResult, setGeminiResult] = useState("");
   const [copied, setCopied] = useState(false);
+  const [imageCopied, setImageCopied] = useState(false);
   const image = reviewCase.primaryImage;
   const prompt = manualPrompt(reviewCase);
 
-  function copyPrompt() {
-    navigator.clipboard.writeText(prompt)
+  async function copyPrompt() {
+    await navigator.clipboard.writeText(prompt)
       .then(() => {
         setCopied(true);
         window.setTimeout(() => setCopied(false), 1600);
       })
       .catch(() => setCopied(false));
+  }
+
+  async function openManualCheck() {
+    await copyPrompt();
+    openSideBySideVerifierWindows();
+  }
+
+  async function copyImage() {
+    if (!image) return;
+    try {
+      const response = await fetch(imageUrl(image.filename));
+      const blob = await response.blob();
+      await navigator.clipboard.write([
+        new ClipboardItem({ [blob.type || "image/jpeg"]: blob })
+      ]);
+      setImageCopied(true);
+      window.setTimeout(() => setImageCopied(false), 1600);
+    } catch {
+      window.open(imageUrl(image.filename), "_blank", "noopener,noreferrer");
+    }
   }
 
   function applyManualFallback() {
@@ -408,27 +883,23 @@ function ManualAiCheck({
         <div>
           <div className="sectionLabel">Final fallback</div>
           <strong>Manual AI Check</strong>
-          <p>Use when automated signals are ambiguous. Open ChatGPT/Gemini, drag or upload the image, paste the prompt, then paste results back here.</p>
+          <p>Use when automated signals are ambiguous. One click opens ChatGPT and Gemini and copies the prompt; paste their outputs back here.</p>
         </div>
       </div>
 
       <div className="manualButtons">
-        <button type="button" onClick={() => window.open("https://chatgpt.com/", "_blank", "noopener,noreferrer")}>
+        <button type="button" className="launchManual" onClick={openManualCheck}>
           <ExternalLink size={15} />
-          Open ChatGPT
-        </button>
-        <button type="button" onClick={() => window.open("https://gemini.google.com/app", "_blank", "noopener,noreferrer")}>
-          <ExternalLink size={15} />
-          Open Gemini
+          Open ChatGPT + Gemini
         </button>
         <button type="button" onClick={copyPrompt}>
           <Copy size={15} />
           {copied ? "Copied" : "Copy prompt"}
         </button>
         {image ? (
-          <button type="button" onClick={() => window.open(imageUrl(image.filename), "_blank", "noopener,noreferrer")}>
-            <ExternalLink size={15} />
-            Open image
+          <button type="button" onClick={copyImage}>
+            <Copy size={15} />
+            {imageCopied ? "Image copied" : "Copy image"}
           </button>
         ) : null}
       </div>
@@ -445,8 +916,10 @@ function ManualAiCheck({
         </div>
       ) : null}
 
-      <textarea value={chatgptResult} onChange={(event) => setChatgptResult(event.target.value)} placeholder="Paste ChatGPT result..." />
-      <textarea value={geminiResult} onChange={(event) => setGeminiResult(event.target.value)} placeholder="Paste Gemini result..." />
+      <div className="manualInputs">
+        <textarea value={chatgptResult} onChange={(event) => setChatgptResult(event.target.value)} placeholder="Paste ChatGPT result..." />
+        <textarea value={geminiResult} onChange={(event) => setGeminiResult(event.target.value)} placeholder="Paste Gemini result..." />
+      </div>
 
       <div className="manualButtons">
         <button type="button" className="applyManual" onClick={applyManualFallback}>Apply manual fallback</button>
@@ -526,6 +999,133 @@ function Fact({ title, value, detail }: { title: string; value: string; detail: 
   );
 }
 
+function buildDashboardMetrics(
+  cases: ReviewCase[],
+  analysisByCase: Record<string, AnalysisResult>,
+  manualByCase: Record<string, ManualFallbackResult | null>,
+  actionLogByCase: Record<string, CaseActionLog[]>
+) {
+  return {
+    unanalysed: cases.filter((item, index) => matchesQueueFilter(item, index, "unanalysed", analysisByCase, manualByCase, actionLogByCase)).length,
+    resubmission: cases.filter((item, index) => matchesQueueFilter(item, index, "resubmission", analysisByCase, manualByCase, actionLogByCase)).length,
+    timeSensitive: cases.filter((item, index) => matchesQueueFilter(item, index, "time_sensitive", analysisByCase, manualByCase, actionLogByCase)).length,
+    elevated: cases.filter((item, index) => matchesQueueFilter(item, index, "elevated", analysisByCase, manualByCase, actionLogByCase)).length,
+    manual: cases.filter((item, index) => matchesQueueFilter(item, index, "manual", analysisByCase, manualByCase, actionLogByCase)).length
+  };
+}
+
+function matchesQueueFilter(
+  reviewCase: ReviewCase,
+  index: number,
+  filter: QueueFilter,
+  analysisByCase: Record<string, AnalysisResult>,
+  manualByCase: Record<string, ManualFallbackResult | null>,
+  actionLogByCase: Record<string, CaseActionLog[]>
+) {
+  if (filter === "all") return true;
+  if (filter === "unanalysed") return !analysisByCase[reviewCase.id];
+  if (filter === "resubmission") return isReadyForResubmission(reviewCase, index, actionLogByCase[reviewCase.id] ?? []);
+  if (filter === "time_sensitive") return demoDaysOpen(reviewCase, index) > 7 && !hasFinalDecision(actionLogByCase[reviewCase.id] ?? []);
+  if (filter === "elevated") return visibleRiskLevel(reviewCase.id, analysisByCase, manualByCase) !== "Low" || behaviouralPressure(reviewCase) >= 2;
+  if (filter === "manual") return needsManualFallback(reviewCase, index, analysisByCase);
+  return true;
+}
+
+function queueTitle(filter: QueueFilter) {
+  const titles: Record<QueueFilter, string> = {
+    all: "All escalated disputes",
+    unanalysed: "Tickets left for analysis",
+    resubmission: "Ready for re-submission",
+    time_sensitive: "Time-sensitive tickets",
+    elevated: "Elevated review queue",
+    manual: "Manual fallback needed"
+  };
+  return titles[filter];
+}
+
+function priorityScore(
+  reviewCase: ReviewCase,
+  index: number,
+  analysisByCase: Record<string, AnalysisResult>,
+  manualByCase: Record<string, ManualFallbackResult | null>,
+  actionLogByCase: Record<string, CaseActionLog[]>
+) {
+  const risk = visibleRiskLevel(reviewCase.id, analysisByCase, manualByCase);
+  return (
+    (risk === "High" ? 80 : risk === "Elevated" ? 48 : 18) +
+    behaviouralPressure(reviewCase) * 14 +
+    (demoDaysOpen(reviewCase, index) > 7 ? 28 : 0) +
+    (needsManualFallback(reviewCase, index, analysisByCase) ? 16 : 0) +
+    (isReadyForResubmission(reviewCase, index, actionLogByCase[reviewCase.id] ?? []) ? 10 : 0)
+  );
+}
+
+function dashboardReason(
+  reviewCase: ReviewCase,
+  index: number,
+  analysisByCase: Record<string, AnalysisResult>,
+  manualByCase: Record<string, ManualFallbackResult | null>,
+  actionLogByCase: Record<string, CaseActionLog[]>
+) {
+  const risk = visibleRiskLevel(reviewCase.id, analysisByCase, manualByCase);
+  if (risk === "High" || risk === "Elevated") return `${risk} risk after analysis`;
+  if (demoDaysOpen(reviewCase, index) > 7) return `${demoDaysOpen(reviewCase, index)} days unresolved`;
+  if (isReadyForResubmission(reviewCase, index, actionLogByCase[reviewCase.id] ?? [])) return "Ready for evidence follow-up";
+  if (needsManualFallback(reviewCase, index, analysisByCase)) return "Manual AI-image fallback suggested";
+  return "Ready for initial analysis";
+}
+
+function visibleRiskLevel(
+  caseId: string,
+  analysisByCase: Record<string, AnalysisResult>,
+  manualByCase: Record<string, ManualFallbackResult | null>
+): RiskLevel | null {
+  return manualByCase[caseId]?.finalRiskLevel ?? analysisByCase[caseId]?.finalRiskLevel ?? null;
+}
+
+function behaviouralPressure(reviewCase: ReviewCase) {
+  return [
+    reviewCase.buyer.account_age_days < 30,
+    reviewCase.buyer.claims_last_30_days >= 2,
+    reviewCase.buyer.total_refunds >= 2,
+    reviewCase.seller.disputes_last_90d >= 3,
+    reviewCase.order.total_claims_against_order >= 2
+  ].filter(Boolean).length;
+}
+
+function demoDaysOpen(reviewCase: ReviewCase, index: number) {
+  const delivered = Date.parse(reviewCase.order.delivered_at);
+  const realAge = Number.isFinite(delivered) ? Math.max(1, Math.floor((Date.now() - delivered) / 86_400_000)) : 1;
+  return realAge + (index % 4 === 0 ? 8 : index % 3);
+}
+
+function isReadyForResubmission(reviewCase: ReviewCase, index: number, actions: CaseActionLog[]) {
+  const text = `${reviewCase.claim.refund_request_description} ${reviewCase.sellerResponse}`.toLowerCase();
+  return actions.some((action) => action.type === "request_evidence") ||
+    text.includes("additional") ||
+    text.includes("packag") ||
+    reviewCase.order.total_claims_against_order >= 3 ||
+    index % 5 === 1;
+}
+
+function hasFinalDecision(actions: CaseActionLog[]) {
+  return actions.some((action) => action.type === "approve_refund" || action.type === "reject_refund");
+}
+
+function needsManualFallback(
+  reviewCase: ReviewCase,
+  index: number,
+  analysisByCase: Record<string, AnalysisResult>
+) {
+  const analysis = analysisByCase[reviewCase.id];
+  const sightengine = analysis?.signals.find((signal) => signal.key === "sightengine");
+  const physical = analysis?.signals.find((signal) => signal.key === "physical_plausibility");
+  if (sightengine?.score !== null && sightengine?.score !== undefined && physical?.score !== null && physical?.score !== undefined) {
+    return sightengine.score < 30 && physical.score >= 55;
+  }
+  return reviewCase.primaryImage?.metadata_status === "stripped" && (behaviouralPressure(reviewCase) >= 2 || index % 4 === 2);
+}
+
 function manualPrompt(reviewCase: ReviewCase) {
   return [
     "Check confidence of this image being AI-generated or AI-edited.",
@@ -562,6 +1162,26 @@ function inferManualScore(text: string) {
   if (lower.includes("medium") || lower.includes("moderate") || lower.includes("uncertain") || lower.includes("mixed")) return 55;
   if (lower.includes("low confidence") || lower.includes("unlikely") || lower.includes("no obvious")) return 25;
   return 50;
+}
+
+function openSideBySideVerifierWindows() {
+  const availableWidth = window.screen.availWidth || 1440;
+  const availableHeight = window.screen.availHeight || 900;
+  const width = Math.max(520, Math.floor(availableWidth / 2));
+  const height = Math.max(700, availableHeight);
+  const top = 0;
+  const leftWindow = window.open(
+    "https://chatgpt.com/",
+    "manual-ai-check-chatgpt",
+    `popup=yes,width=${width},height=${height},left=0,top=${top}`
+  );
+  const rightWindow = window.open(
+    "https://gemini.google.com/app",
+    "manual-ai-check-gemini",
+    `popup=yes,width=${width},height=${height},left=${width},top=${top}`
+  );
+  leftWindow?.focus();
+  rightWindow?.focus();
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
