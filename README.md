@@ -1,2 +1,2 @@
-# supxopenai-hackathon-JYP
+# supxopenai-hackathon-PJAY
 27 June supxopenai hackathon
