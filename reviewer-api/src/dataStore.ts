@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import type { BuyerAccount, Claim, Order, Product, ReviewCase, Seller } from "./types.js";
+import type { BuyerAccount, Claim, GalleryImage, Order, Product, ReviewCase, Seller } from "./types.js";
 
 interface RawData {
   accounts: BuyerAccount[];
@@ -27,6 +27,10 @@ export class DataStore {
 
   getClaimImagePath(filename: string) {
     return join(this.dataRoot, "data", "images", "claims", filename);
+  }
+
+  getReferenceImagePath(filename: string) {
+    return join(this.dataRoot, "data", "images", "reference", filename);
   }
 
   getCases() {
@@ -67,6 +71,7 @@ export class DataStore {
       const seller = order ? sellers.get(order.seller_id) : undefined;
       if (!buyer || !order || !product || !seller) return [];
 
+      const galleryImages = this.buildGalleryImages(claim, raw.claims, product);
       const sellerResponse = sellerRejections[index % sellerRejections.length];
       return [{
         id: claim.id,
@@ -77,6 +82,7 @@ export class DataStore {
         product,
         claim,
         primaryImage: claim.images[0],
+        galleryImages,
         sellerResponse,
         escalationSummary: `${buyer.display_name} escalated the rejected refund request to Carousell for reviewer assessment.`,
         timeline: [
@@ -108,5 +114,53 @@ export class DataStore {
         ]
       }];
     });
+  }
+
+  private buildGalleryImages(claim: Claim, allClaims: Claim[], product: Product): GalleryImage[] {
+    const seen = new Set<string>();
+    const images: GalleryImage[] = [];
+
+    for (const image of claim.images) {
+      if (seen.has(`claim:${image.filename}`)) continue;
+      seen.add(`claim:${image.filename}`);
+      images.push({
+        id: image.image_id,
+        filename: image.filename,
+        label: "Current claim evidence",
+        source: "claim",
+        kind: "claim",
+        metadata_status: image.metadata_status,
+        capture_context: image.capture_context
+      });
+    }
+
+    for (const relatedClaim of allClaims) {
+      if (relatedClaim.id === claim.id || relatedClaim.order_id !== claim.order_id) continue;
+      for (const image of relatedClaim.images) {
+        if (seen.has(`claim:${image.filename}`)) continue;
+        seen.add(`claim:${image.filename}`);
+        images.push({
+          id: image.image_id,
+          filename: image.filename,
+          label: `Same order evidence (${relatedClaim.id})`,
+          source: "same_order_claim",
+          kind: "claim",
+          metadata_status: image.metadata_status,
+          capture_context: image.capture_context
+        });
+      }
+    }
+
+    if (product.reference_image && !seen.has(`reference:${product.reference_image}`)) {
+      images.push({
+        id: `${product.id}-reference`,
+        filename: product.reference_image,
+        label: "Product reference image",
+        source: "reference",
+        kind: "reference"
+      });
+    }
+
+    return images;
   }
 }

@@ -26,6 +26,12 @@ export function scoreCase(reviewCase: ReviewCase, signals: SignalResult[], cache
   const sightengine = signals.find((signal) => signal.key === "sightengine");
   const evidence = signals.find((signal) => signal.key === "evidence_sufficiency");
 
+  const physicalVisualIntegrityScore = extractVisualIntegrityScore(physical?.raw);
+  if (physicalVisualIntegrityScore >= 70 && sightengine?.status === "complete" && (sightengine.score ?? 0) < 35) {
+    finalRiskScore = Math.max(finalRiskScore, 50);
+    guardrailsApplied.push("Sightengine was low, but OpenAI visual integrity review found visible anomaly concern; treat as mixed evidence, not a detector pass.");
+  }
+
   if (physical?.status === "complete" && physical.score !== null && physical.score >= 80 && finalRiskScore >= 70) {
     const otherConfiguredHigh = [behavioural, sightengine, evidence]
       .some((signal) => signal?.status === "complete" && (signal.score ?? 0) >= 60);
@@ -64,6 +70,13 @@ export function scoreCase(reviewCase: ReviewCase, signals: SignalResult[], cache
     signals,
     guardrailsApplied
   };
+}
+
+function extractVisualIntegrityScore(raw: unknown) {
+  if (!raw || typeof raw !== "object" || !("visual_integrity_score" in raw)) return 0;
+  const value = Number((raw as { visual_integrity_score?: unknown }).visual_integrity_score);
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, value));
 }
 
 function chooseAction(reviewCase: ReviewCase, riskLevel: "Low" | "Elevated" | "High", signals: SignalResult[]) {

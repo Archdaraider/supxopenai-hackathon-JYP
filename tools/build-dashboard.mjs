@@ -18,175 +18,260 @@ const html = String.raw`<!doctype html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Carousell Claim Dataset Dashboard</title>
+  <title>Test User Data Dashboard</title>
   <style>
     :root {
-      color-scheme: dark;
-      --bg: #08090a;
-      --panel: #101214;
-      --panel-2: #15181b;
-      --line: #272b30;
-      --line-2: #343a40;
-      --text: #f4f4f5;
-      --muted: #9ca3af;
-      --faint: #6b7280;
-      --green: #34d399;
-      --amber: #fbbf24;
-      --red: #fb7185;
-      --blue: #60a5fa;
-      --radius: 8px;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: light;
+      --bg: #eef2ff;
+      --surface: #ffffff;
+      --surface-2: #f8fbff;
+      --ink: #14151f;
+      --muted: #626b80;
+      --faint: #8a93a8;
+      --line: #d8deef;
+      --line-2: #bcc6dd;
+      --green: #08795b;
+      --amber: #a05a00;
+      --red: #b42336;
+      --blue: #2457c5;
+      --shadow: 0 22px 58px rgba(36, 55, 103, .13);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       min-width: 320px;
+      color: var(--ink);
       background:
-        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
-        radial-gradient(circle at 10% 0%, rgba(96,165,250,.08), transparent 28%),
-        radial-gradient(circle at 90% 10%, rgba(52,211,153,.07), transparent 24%),
+        linear-gradient(135deg, rgba(36,87,197,.12), transparent 36%),
+        linear-gradient(315deg, rgba(8,121,91,.10), transparent 32%),
         var(--bg);
-      background-size: 56px 56px, 56px 56px, auto, auto, auto;
-      color: var(--text);
     }
-    button, input, select { font: inherit; }
+    button, input, select, summary { font: inherit; }
     button { cursor: pointer; }
-    .shell { max-width: 1540px; margin: 0 auto; padding: 20px; }
+    .shell { max-width: 1720px; margin: 0 auto; padding: 22px; }
     header {
-      display: grid;
-      gap: 16px;
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: start;
-      padding-bottom: 18px;
-      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 18px;
+      margin-bottom: 18px;
     }
-    h1 { margin: 0; font-size: clamp(28px, 4vw, 48px); line-height: 1; letter-spacing: 0; }
-    .sub { margin: 10px 0 0; max-width: 760px; color: var(--muted); line-height: 1.55; }
-    .meta { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
-    .pill {
+    .eyebrow, .label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 { margin-top: 4px; font-size: clamp(36px, 5vw, 72px); line-height: .92; letter-spacing: 0; }
+    .sub { margin-top: 12px; max-width: 900px; color: var(--muted); line-height: 1.55; font-size: 16px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .pill, .badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      min-height: 30px;
-      padding: 6px 10px;
+      min-height: 28px;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(16,18,20,.82);
+      padding: 5px 9px;
+      background: rgba(255,255,255,.72);
       color: var(--muted);
       font-size: 12px;
-      font-weight: 650;
+      font-weight: 800;
       white-space: nowrap;
     }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 10px;
-      margin: 18px 0;
-    }
-    .stat, .panel {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(21,24,27,.92), rgba(10,11,13,.92));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
-    }
-    .stat { padding: 14px; }
-    .stat .label { color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
-    .stat .value { margin-top: 8px; font-size: 26px; font-weight: 750; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
     .toolbar {
       display: grid;
-      grid-template-columns: minmax(240px, 1fr) 180px 180px;
+      grid-template-columns: minmax(260px, 1fr) 180px;
       gap: 10px;
       margin-bottom: 14px;
     }
     input, select {
       width: 100%;
-      min-height: 42px;
+      min-height: 48px;
       border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: #0b0d0f;
-      color: var(--text);
+      border-radius: 10px;
+      background: rgba(255,255,255,.86);
+      color: var(--ink);
       padding: 0 12px;
       outline: none;
     }
     input:focus, select:focus { border-color: var(--line-2); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .stat, .panel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.92);
+      box-shadow: var(--shadow);
+    }
+    .stat { padding: 18px; min-height: 116px; display: grid; align-content: space-between; }
+    .stat strong { display: block; margin-top: 12px; font-size: 38px; line-height: .95; }
     .layout {
       display: grid;
-      grid-template-columns: 420px minmax(0, 1fr);
-      gap: 14px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
       align-items: start;
     }
-    .list { max-height: calc(100vh - 230px); overflow: auto; }
-    .row {
-      width: 100%;
-      border: 0;
-      border-bottom: 1px solid var(--line);
-      background: transparent;
-      color: inherit;
+    .case-list {
+      max-height: none;
+      overflow: visible;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
       padding: 12px;
+    }
+    .case-row {
+      width: 100%;
+      min-height: 158px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff, #f9fbff);
+      color: inherit;
       text-align: left;
+      padding: 14px;
+      box-shadow: 0 10px 28px rgba(36,55,103,.06);
     }
-    .row:hover, .row.active { background: rgba(255,255,255,.045); }
-    .rowtop { display: flex; gap: 8px; justify-content: space-between; align-items: start; }
-    .id { color: #fff; font-weight: 750; }
-    .name { margin-top: 5px; color: var(--muted); font-size: 13px; line-height: 1.35; }
-    .small { color: var(--faint); font-size: 12px; }
-    .badge {
-      display: inline-flex;
-      align-items: center;
+    .case-row:hover, .case-row.active { border-color: #8fa7df; background: #f7faff; }
+    .case-row.active { box-shadow: inset 0 0 0 2px #8fa7df, 0 14px 34px rgba(36,55,103,.12); }
+    .row-top { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+    .case-id { font-weight: 900; }
+    .row-title { margin-top: 14px; font-weight: 900; line-height: 1.24; font-size: 17px; }
+    .row-meta { margin-top: 10px; color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .detail { padding: 22px; min-height: auto; }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(380px, .9fr);
+      gap: 22px;
+      align-items: start;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+    .badge.low { color: #0f5132; border-color: #b9dfc8; background: #e7f4ec; }
+    .badge.elevated { color: #7a3d00; border-color: #f1d18d; background: #fff4dc; }
+    .badge.high { color: #842029; border-color: #f2b8c1; background: #fdecef; }
+    h2 { font-size: clamp(34px, 4vw, 58px); line-height: .96; letter-spacing: 0; }
+    .desc { margin-top: 16px; color: var(--muted); line-height: 1.56; font-size: 18px; }
+    .process {
+      margin-top: 18px;
+      border-left: 5px solid #4f7bd9;
+      background: #f4f7ff;
+      border-radius: 0 12px 12px 0;
+      padding: 16px;
+      color: #253960;
+      font-weight: 760;
+      line-height: 1.45;
+      font-size: 17px;
+    }
+    .image-card {
       border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 4px 7px;
-      font-size: 11px;
-      font-weight: 800;
-      white-space: nowrap;
+      border-radius: 14px;
+      background: #f9faf8;
+      padding: 18px;
     }
-    .low { color: #bbf7d0; border-color: rgba(52,211,153,.28); background: rgba(52,211,153,.10); }
-    .elevated { color: #fde68a; border-color: rgba(251,191,36,.30); background: rgba(251,191,36,.10); }
-    .high { color: #fecdd3; border-color: rgba(251,113,133,.34); background: rgba(251,113,133,.12); }
-    .detail { padding: 16px; min-height: calc(100vh - 230px); }
-    .detail-head { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr) 360px; align-items: start; }
-    h2 { margin: 0; font-size: 24px; letter-spacing: 0; }
-    h3 { margin: 0 0 10px; font-size: 14px; color: #fff; }
-    .desc { margin: 10px 0 0; color: var(--muted); line-height: 1.55; }
-    .imagebox {
+    .image-frame {
+      aspect-ratio: 16 / 11;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      display: grid;
+      place-items: center;
+      padding: 16px;
       overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: #090a0b;
-      aspect-ratio: 4 / 3;
     }
-    .imagebox img { width: 100%; height: 100%; object-fit: contain; display: block; }
-    .grid { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 14px; }
-    .kv {
+    .image-frame img { max-width: 94%; max-height: 94%; object-fit: contain; display: block; border-radius: 4px; box-shadow: 0 10px 26px rgba(20, 25, 21, .10); }
+    .image-caption { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 7px; }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .summary-card {
       border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(8,9,10,.55);
+      border-radius: 14px;
+      background: var(--surface-2);
+      padding: 18px;
+      min-height: 168px;
+      min-width: 0;
+      display: grid;
+      align-content: start;
+    }
+    .summary-card strong { display: block; margin-top: 12px; font-size: 28px; line-height: 1.05; overflow-wrap: anywhere; }
+    .summary-card p { margin-top: 12px; color: var(--muted); font-size: 15px; line-height: 1.45; }
+    .wide { grid-column: span 1; }
+    .section-band {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .feature {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      padding: 18px;
+      min-height: 168px;
+    }
+    .feature h3 { font-size: 20px; }
+    .feature ul { margin: 12px 0 0; padding-left: 18px; color: var(--muted); line-height: 1.5; font-size: 15px; }
+    .more {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .more summary {
+      cursor: pointer;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      font-weight: 850;
+    }
+    .raw-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 0 14px 14px;
+    }
+    .raw-block {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f9faf8;
       padding: 10px;
       min-width: 0;
     }
-    .kv .k { color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; font-weight: 800; }
-    .kv .v { margin-top: 6px; color: var(--text); font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
-    .sections { display: grid; gap: 12px; margin-top: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .section { border: 1px solid var(--line); border-radius: var(--radius); background: rgba(8,9,10,.48); padding: 12px; }
-    .json {
+    .raw-block h3 { margin-bottom: 8px; font-size: 13px; }
+    pre {
+      margin: 0;
       white-space: pre-wrap;
       overflow: auto;
-      max-height: 280px;
-      margin: 0;
-      color: #d1d5db;
-      font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      max-height: 260px;
+      color: #374151;
+      font: 12px/1.48 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-    .empty { padding: 28px; text-align: center; color: var(--faint); }
-    @media (max-width: 1080px) {
-      header, .layout, .detail-head { grid-template-columns: 1fr; }
+    .empty { padding: 34px; text-align: center; color: var(--muted); }
+    @media (max-width: 1180px) {
+      header, .layout, .hero { display: grid; grid-template-columns: 1fr; }
       .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .toolbar { grid-template-columns: 1fr; }
-      .list { max-height: 360px; }
-      .sections, .grid { grid-template-columns: 1fr; }
-      .meta { justify-content: flex-start; }
+      .case-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .summary-grid, .section-band, .raw-grid { grid-template-columns: 1fr; }
+      .wide { grid-column: span 1; }
+      .header-actions { justify-content: flex-start; }
+    }
+    @media (max-width: 700px) {
+      .shell { padding: 10px; }
+      .toolbar, .case-list { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -194,11 +279,12 @@ const html = String.raw`<!doctype html>
   <div class="shell">
     <header>
       <div>
-        <h1>Behavioural Truth Dashboard</h1>
-        <p class="sub">A local viewer for Carousell dispute-review behavioural truth: buyer profiles, orders, sellers, products, claim descriptions, private eval labels, and attached evidence images. Built from the current JSON files in <code>data/</code>.</p>
+        <div class="eyebrow">Presentation Database</div>
+        <h1>Test User Data Dashboard</h1>
+        <p class="sub">Large-card case summaries for explaining the buyer, seller, order, refund, and evidence characteristics used by the reviewer workflow.</p>
       </div>
-      <div class="meta">
-        <span class="pill"><span class="dot"></span>Local static viewer</span>
+      <div class="header-actions">
+        <span class="pill"><span class="pulse"></span>Presentation mode</span>
         <span class="pill" id="generatedAt"></span>
       </div>
     </header>
@@ -206,16 +292,9 @@ const html = String.raw`<!doctype html>
     <section class="stats" id="stats"></section>
 
     <section class="toolbar">
-      <input id="search" type="search" placeholder="Search IDs, buyers, sellers, products, descriptions..." />
-      <select id="view">
-        <option value="claims">Claims</option>
-        <option value="accounts">Buyer profiles</option>
-        <option value="orders">Orders</option>
-        <option value="sellers">Sellers</option>
-        <option value="products">Products</option>
-      </select>
+      <input id="search" type="search" placeholder="Search case, buyer, seller, product, description..." />
       <select id="band">
-        <option value="all">All bands</option>
+        <option value="all">All cases</option>
         <option value="Low">Low</option>
         <option value="Elevated">Elevated</option>
         <option value="High">High</option>
@@ -223,7 +302,7 @@ const html = String.raw`<!doctype html>
     </section>
 
     <main class="layout">
-      <aside class="panel list" id="list"></aside>
+      <aside class="panel case-list" id="list"></aside>
       <section class="panel detail" id="detail"></section>
     </main>
   </div>
@@ -232,223 +311,201 @@ const html = String.raw`<!doctype html>
   <script>
     const db = JSON.parse(document.getElementById("dataset").textContent);
     const $ = (id) => document.getElementById(id);
-    let state = { view: "claims", q: "", band: "all", selected: null };
+    let state = { q: "", band: "all", selected: null };
 
     const byId = (items) => Object.fromEntries(items.map((item) => [item.id, item]));
     const accounts = byId(db.accounts);
     const sellers = byId(db.sellers);
     const orders = byId(db.orders);
     const products = byId(db.products);
-    const claims = byId(db.claims);
 
     function init() {
       $("generatedAt").textContent = "Generated " + new Date(db.generatedAt).toLocaleString();
       $("search").addEventListener("input", (event) => { state.q = event.target.value.toLowerCase(); render(); });
-      $("view").addEventListener("change", (event) => { state.view = event.target.value; state.selected = null; render(); });
       $("band").addEventListener("change", (event) => { state.band = event.target.value; render(); });
       render();
     }
 
-    function render() {
-      renderStats();
-      const items = filteredItems();
-      if (!state.selected && items[0]) state.selected = items[0].id;
-      if (items.length && !items.some((item) => item.id === state.selected)) state.selected = items[0].id;
-      renderList(items);
-      renderDetail(items.find((item) => item.id === state.selected) || items[0]);
-    }
-
-    function filteredItems() {
-      const base = db[state.view];
-      const q = state.q;
-      return base.filter((item) => {
-        if (state.view === "claims" && state.band !== "all" && item._dev?.expected_band !== state.band) return false;
-        if (!q) return true;
-        return JSON.stringify(enrich(item)).toLowerCase().includes(q);
+    function cases() {
+      return db.claims.map((claim) => {
+        const order = orders[claim.order_id] || {};
+        return {
+          claim,
+          account: accounts[claim.account_id] || {},
+          order,
+          seller: sellers[order.seller_id] || {},
+          product: products[claim.product_id] || {},
+          image: claim.images && claim.images[0],
+        };
       });
     }
 
-    function enrich(item) {
-      if (state.view !== "claims") return item;
-      return {
-        ...item,
-        account: accounts[item.account_id],
-        order: orders[item.order_id],
-        product: products[item.product_id],
-        seller: sellers[orders[item.order_id]?.seller_id],
-      };
+    function filteredCases() {
+      const q = state.q;
+      return cases().filter((item) => {
+        if (state.band !== "all" && item.claim._dev?.expected_band !== state.band) return false;
+        if (!q) return true;
+        return [
+          item.claim.id,
+          item.account.display_name,
+          item.seller.display_name,
+          item.product.name,
+          item.claim.refund_request_description,
+          item.account.user_profile_badge,
+          item.seller.user_profile_badge,
+        ].join(" ").toLowerCase().includes(q);
+      });
+    }
+
+    function render() {
+      renderStats();
+      const items = filteredCases();
+      if (!state.selected && items[0]) state.selected = items[0].claim.id;
+      if (items.length && !items.some((item) => item.claim.id === state.selected)) state.selected = items[0].claim.id;
+      renderList(items);
+      renderDetail(items.find((item) => item.claim.id === state.selected) || items[0]);
     }
 
     function renderStats() {
-      const high = db.claims.filter((c) => c._dev?.expected_band === "High").length;
-      const elevated = db.claims.filter((c) => c._dev?.expected_band === "Elevated").length;
-      const low = db.claims.filter((c) => c._dev?.expected_band === "Low").length;
+      const claimCount = db.claims.length;
+      const verified = db.accounts.filter((account) => account.identity_verified).length;
+      const avgRefund = db.orders.reduce((sum, order) => sum + Number(order.refund_amount_requested_sgd || 0), 0) / db.orders.length;
+      const highSellerContext = db.sellers.filter((seller) => seller.packaging_complaints_count >= 3 || seller.disputes_last_90d >= 4).length;
+      const newUsers = db.accounts.filter((account) => account.user_profile_badge === "New User").length;
       $("stats").innerHTML = [
-        stat("Claims", db.claims.length),
-        stat("Buyer profiles", db.accounts.length),
-        stat("Orders", db.orders.length),
-        stat("Products", db.products.length),
-        stat("Bands", high + " high / " + elevated + " elevated / " + low + " low"),
+        stat("Dispute claims", claimCount),
+        stat("Verified buyers", verified + " / " + db.accounts.length),
+        stat("Avg refund", money(avgRefund)),
+        stat("Seller context flags", highSellerContext),
+        stat("New users", newUsers),
       ].join("");
     }
 
-    function stat(label, value) {
-      return '<div class="stat"><div class="label">' + esc(label) + '</div><div class="value">' + esc(value) + '</div></div>';
-    }
-
     function renderList(items) {
-      $("list").innerHTML = items.length ? items.map((item) => row(item)).join("") : '<div class="empty">No records match.</div>';
-      document.querySelectorAll(".row").forEach((button) => {
+      $("list").innerHTML = items.length ? items.map((item) => row(item)).join("") : '<div class="empty">No cases match.</div>';
+      document.querySelectorAll(".case-row").forEach((button) => {
         button.addEventListener("click", () => { state.selected = button.dataset.id; render(); });
       });
     }
 
     function row(item) {
-      const active = item.id === state.selected ? " active" : "";
-      if (state.view === "claims") {
-        const product = products[item.product_id];
-        const account = accounts[item.account_id];
-        const band = item._dev?.expected_band || "Unknown";
-        return '<button class="row' + active + '" data-id="' + esc(item.id) + '">' +
-          '<div class="rowtop"><span class="id">' + esc(item.id) + '</span>' + bandBadge(band) + '</div>' +
-          '<div class="name">' + esc(product?.name || item.product_id) + '</div>' +
-          '<div class="small">' + esc(account?.display_name || item.account_id) + ' · ' + esc(item.reason_category) + '</div>' +
-        '</button>';
-      }
-      const primary = item.display_name || item.name || item.id;
-      return '<button class="row' + active + '" data-id="' + esc(item.id) + '">' +
-        '<div class="rowtop"><span class="id">' + esc(item.id) + '</span></div>' +
-        '<div class="name">' + esc(primary) + '</div>' +
-        '<div class="small">' + esc(summary(item)) + '</div>' +
+      const active = item.claim.id === state.selected ? " active" : "";
+      const band = item.claim._dev?.expected_band || "Unlabeled";
+      return '<button class="case-row' + active + '" data-id="' + esc(item.claim.id) + '">' +
+        '<div class="row-top"><span class="case-id">' + esc(item.claim.id) + '</span>' + bandBadge(band) + '</div>' +
+        '<div class="row-title">' + esc(item.product.name || item.claim.product_id) + '</div>' +
+        '<div class="row-meta">' + esc(item.account.user_profile_badge || "Unknown profile") + ' buyer · ' + esc(money(item.order.refund_amount_requested_sgd)) + '</div>' +
       '</button>';
     }
 
     function renderDetail(item) {
       if (!item) {
-        $("detail").innerHTML = '<div class="empty">Select a record.</div>';
+        $("detail").innerHTML = '<div class="empty">Select a case.</div>';
         return;
       }
-      if (state.view === "claims") return renderClaim(item);
-      if (state.view === "accounts") return renderAccount(item);
-      if (state.view === "orders") return renderOrder(item);
-      if (state.view === "sellers") return renderSeller(item);
-      return renderProduct(item);
-    }
 
-    function renderClaim(claim) {
-      const account = accounts[claim.account_id] || {};
-      const order = orders[claim.order_id] || {};
-      const product = products[claim.product_id] || {};
-      const seller = sellers[order.seller_id] || {};
-      const image = claim.images?.[0];
+      const refundRate = item.account.total_orders ? item.account.total_refunds / item.account.total_orders : 0;
+      const sellerDisputeRate = item.seller.orders_last_90d ? item.seller.disputes_last_90d / item.seller.orders_last_90d : 0;
+      const processLine = buildProcessLine(item);
+      const imageHtml = item.image ? '<img src="data/images/claims/' + encodeURIComponent(item.image.filename) + '" alt="' + esc(item.image.filename) + '">' : '<span>No image</span>';
+
       $("detail").innerHTML =
-        '<div class="detail-head">' +
-          '<div><div class="chips">' + bandBadge(claim._dev?.expected_band) + badge(account.user_profile_badge || "profile unknown") + badge(image?.metadata_status || "metadata unknown") + '</div>' +
-          '<h2>' + esc(claim.id) + ' · ' + esc(product.name || claim.product_id) + '</h2>' +
-          '<p class="desc">' + esc(claim.refund_request_description || claim.claim_text || "") + '</p></div>' +
-          '<div class="imagebox">' + (image ? '<img src="data/images/claims/' + encodeURIComponent(image.filename) + '" alt="' + esc(image.filename) + '">' : '') + '</div>' +
+        '<div class="hero">' +
+          '<div>' +
+            '<div class="chips">' +
+              bandBadge(item.claim._dev?.expected_band || "Unlabeled") +
+              badge(item.account.user_profile_badge || "Unknown buyer profile") +
+              badge(item.seller.user_profile_badge || "Unknown seller profile") +
+              badge(item.order.programme || "Buyer Protection") +
+            '</div>' +
+            '<h2>' + esc(item.product.name || item.claim.product_id) + '</h2>' +
+            '<p class="desc">' + esc(item.claim.refund_request_description || item.claim.claim_text || "") + '</p>' +
+            '<div class="process">' + esc(processLine) + '</div>' +
+          '</div>' +
+          '<div class="image-card">' +
+            '<div class="image-frame">' + imageHtml + '</div>' +
+            '<div class="image-caption">' + badge(item.image?.metadata_status || "metadata unknown") + badge(item.image?.capture_context || "claim evidence") + '</div>' +
+          '</div>' +
         '</div>' +
-        '<div class="grid">' +
-          kv("Buyer", account.display_name || claim.account_id) +
-          kv("Buyer profile", account.user_profile_badge || "n/a") +
-          kv("ID verified", account.identity_verified ? "Yes" : "No") +
-          kv("Seller", seller.display_name || order.seller_id || "n/a") +
-          kv("Seller profile", seller.user_profile_badge || "n/a") +
-          kv("Order", claim.order_id) +
-          kv("Refund type", order.refund_type_requested || "n/a") +
-          kv("Refund amount", money(order.refund_amount_requested_sgd)) +
-          kv("Return required", String(order.return_required)) +
-          kv("Fulfilment", order.fulfilment_method || "n/a") +
-          kv("Dispute deadline", order.dispute_window_deadline || "n/a") +
+        '<div class="summary-grid">' +
+          summaryCard("Buyer statistics", item.account.account_created_at || "n/a", [
+            "Account age: " + (item.account.account_age_days ?? "n/a") + " days",
+            "Refund rate: " + percent(refundRate),
+            "Recent claims: " + (item.account.claims_last_30_days ?? 0) + " in 30 days",
+          ]) +
+          summaryCard("Verification type", item.account.user_profile_badge || "n/a", [
+            item.account.identity_verified ? "Identity verified" : "Identity not verified",
+            item.account.user_profile_meaning || "Profile context unavailable",
+          ]) +
+          summaryCard("Seller reviews", item.seller.user_profile_badge || "n/a", [
+            "Orders in 90d: " + (item.seller.orders_last_90d ?? "n/a"),
+            "Dispute rate: " + percent(sellerDisputeRate),
+            "Packaging complaints: " + (item.seller.packaging_complaints_count ?? 0),
+          ]) +
+          summaryCard("Refund amount", money(item.order.refund_amount_requested_sgd), [
+            "Type: " + human(item.order.refund_type_requested),
+            "Return handled separately: " + (item.order.return_required ? "Yes" : "No"),
+          ]) +
+          summaryCard("Product context", item.product.category || "n/a", [
+            "Price: " + money(item.product.price_sgd),
+            "Material: " + (item.product.material || "n/a"),
+          ], "wide") +
+          summaryCard("Fulfilment context", human(item.order.fulfilment_method), [
+            "Delivered: " + (item.order.delivered_at || "n/a"),
+            "Dispute deadline: " + (item.order.dispute_window_deadline || "n/a"),
+          ], "wide") +
         '</div>' +
-        '<div class="sections">' +
-          section("Buyer behavioural truth", obj(account)) +
-          section("Order", obj(order)) +
-          section("Seller", obj(seller)) +
-          section("Product", obj(product)) +
-          section("Image", obj(image || {})) +
-          section("Private eval label", obj(claim._dev || {})) +
-        '</div>';
+        '<div class="section-band">' +
+          feature("What the reviewer sees", [
+            "Buyer claim and attached image are visible first.",
+            "Risk context is summarized without exposing raw fixture data.",
+            "Raw JSON is hidden below for internal audit only.",
+          ]) +
+          feature("Important behavioural cues", [
+            "Buyer profile: " + (item.account.user_profile_badge || "n/a"),
+            "Refund history: " + (item.account.total_refunds ?? 0) + " refunds from " + (item.account.total_orders ?? 0) + " orders",
+            "Seller context: " + (item.seller.disputes_last_90d ?? 0) + " recent disputes",
+          ]) +
+          feature("Evidence characteristics", [
+            "Image file: " + (item.image?.filename || "n/a"),
+            "Metadata: " + (item.image?.metadata_status || "unknown"),
+            "Product failure modes: " + (item.product.typical_failure_modes || []).slice(0, 2).join("; "),
+          ]) +
+        '</div>' +
+        '<details class="more">' +
+          '<summary>Show more: underlying dataset records</summary>' +
+          '<div class="raw-grid">' +
+            rawBlock("Buyer", item.account) +
+            rawBlock("Seller", item.seller) +
+            rawBlock("Order", item.order) +
+            rawBlock("Product", item.product) +
+            rawBlock("Claim", item.claim) +
+            rawBlock("Image", item.image || {}) +
+          '</div>' +
+        '</details>';
     }
 
-    function renderAccount(account) {
-      const accountClaims = db.claims.filter((c) => c.account_id === account.id);
-      $("detail").innerHTML =
-        '<h2>' + esc(account.id) + ' · ' + esc(account.display_name) + '</h2>' +
-        '<p class="desc">' + esc(account.profile_note || "") + '</p>' +
-        '<div class="grid">' +
-          kv("Created", account.account_created_at) +
-          kv("Profile badge", account.user_profile_badge || "n/a") +
-          kv("ID verified", account.identity_verified ? "Yes" : "No") +
-          kv("Age", account.account_age_days + " days") +
-          kv("Orders", account.total_orders) +
-          kv("Refunds", account.total_refunds) +
-          kv("Recent claims", account.recent_refund_claims) +
-          kv("Claims in 30d", account.claims_last_30_days) +
-        '</div>' +
-        '<div class="sections">' + section("Claims for this buyer", accountClaims.map((c) => c.id + " · " + (products[c.product_id]?.name || c.product_id) + " · " + c._dev?.expected_band).join("\\n") || "None") + section("Raw behavioural truth", obj(account)) + '</div>';
+    function buildProcessLine(item) {
+      return (item.account.display_name || "Buyer") + " bought " + (item.product.name || "an item") + " from " + (item.seller.display_name || "seller") + ", claimed damage after delivery, the seller rejected the refund, and the case was escalated to Carousell review.";
     }
 
-    function renderOrder(order) {
-      const orderClaims = db.claims.filter((c) => c.order_id === order.id);
-      $("detail").innerHTML =
-        '<h2>' + esc(order.id) + '</h2>' +
-        '<div class="grid">' +
-          kv("Buyer", accounts[order.account_id]?.display_name || order.account_id) +
-          kv("Seller", sellers[order.seller_id]?.display_name || order.seller_id) +
-          kv("Product", products[order.product_id]?.name || order.product_id) +
-          kv("Items", order.items) +
-          kv("Order claims", order.total_claims_against_order) +
-          kv("Programme", order.programme) +
-          kv("Fulfilment", order.fulfilment_method) +
-          kv("Refund type", order.refund_type_requested) +
-        '</div>' +
-        '<div class="sections">' + section("Claims on order", orderClaims.map((c) => c.id + " · " + c.refund_request_description).join("\\n") || "None") + section("Raw order", obj(order)) + '</div>';
+    function stat(label, value) {
+      return '<div class="stat"><div class="label">' + esc(label) + '</div><strong>' + esc(value) + '</strong></div>';
     }
-
-    function renderSeller(seller) {
-      const sellerOrders = db.orders.filter((o) => o.seller_id === seller.id);
-      $("detail").innerHTML =
-        '<h2>' + esc(seller.id) + ' · ' + esc(seller.display_name) + '</h2>' +
-        '<div class="grid">' +
-          kv("Type", seller.seller_type) +
-          kv("Profile badge", seller.user_profile_badge || "n/a") +
-          kv("ID verified", seller.identity_verified ? "Yes" : "No") +
-          kv("Created", seller.seller_created_at) +
-          kv("Orders 90d", seller.orders_last_90d) +
-          kv("Disputes 90d", seller.disputes_last_90d) +
-          kv("Packaging complaints", seller.packaging_complaints_count) +
-        '</div>' +
-        '<div class="sections">' + section("Orders", sellerOrders.map((o) => o.id + " · " + (products[o.product_id]?.name || o.product_id)).join("\\n") || "None") + section("Raw seller", obj(seller)) + '</div>';
+    function summaryCard(title, value, lines, extraClass) {
+      return '<div class="summary-card ' + esc(extraClass || "") + '"><div class="label">' + esc(title) + '</div><strong>' + esc(value) + '</strong><p>' + esc(lines.join(" · ")) + '</p></div>';
     }
-
-    function renderProduct(product) {
-      const productClaims = db.claims.filter((c) => c.product_id === product.id);
-      const ref = product.reference_image ? '<div class="imagebox"><img src="data/images/reference/' + encodeURIComponent(product.reference_image) + '" alt="' + esc(product.reference_image) + '"></div>' : "";
-      $("detail").innerHTML =
-        '<div class="detail-head"><div><h2>' + esc(product.id) + ' · ' + esc(product.name) + '</h2><p class="desc">' + esc(product.material || "") + '</p></div>' + ref + '</div>' +
-        '<div class="grid">' +
-          kv("Category", product.category) +
-          kv("Price", money(product.price_sgd)) +
-          kv("Reference image", product.reference_image || "None") +
-          kv("Claims", productClaims.length) +
-        '</div>' +
-        '<div class="sections">' + section("Typical failure modes", (product.typical_failure_modes || []).join("\\n")) + section("Claims", productClaims.map((c) => c.id + " · " + c._dev?.expected_band + " · " + c.refund_request_description).join("\\n") || "None") + section("Raw product", obj(product)) + '</div>';
+    function feature(title, lines) {
+      return '<div class="feature"><h3>' + esc(title) + '</h3><ul>' + lines.map((line) => '<li>' + esc(line) + '</li>').join("") + '</ul></div>';
     }
-
-    function kv(k, v) { return '<div class="kv"><div class="k">' + esc(k) + '</div><div class="v">' + esc(v ?? "n/a") + '</div></div>'; }
-    function section(title, content) { return '<div class="section"><h3>' + esc(title) + '</h3><pre class="json">' + esc(content || "None") + '</pre></div>'; }
-    function obj(value) { return JSON.stringify(value, null, 2); }
+    function rawBlock(title, value) {
+      return '<div class="raw-block"><h3>' + esc(title) + '</h3><pre>' + esc(JSON.stringify(value, null, 2)) + '</pre></div>';
+    }
     function badge(text) { return '<span class="badge">' + esc(text || "n/a") + '</span>'; }
     function bandBadge(band) { return '<span class="badge ' + String(band || "").toLowerCase() + '">' + esc(band || "Unknown") + '</span>'; }
-    function money(value) { return typeof value === "number" ? "SGD " + value.toFixed(2) : "n/a"; }
-    function summary(item) {
-      if (state.view === "accounts") return item.profile_note || "";
-      if (state.view === "orders") return [item.account_id, item.seller_id, item.product_id].join(" · ");
-      if (state.view === "sellers") return [item.seller_type, item.disputes_last_90d + " disputes"].join(" · ");
-      if (state.view === "products") return [item.category, money(item.price_sgd)].join(" · ");
-      return "";
-    }
+    function money(value) { return typeof value === "number" && Number.isFinite(value) ? "SGD " + value.toFixed(2) : "n/a"; }
+    function percent(value) { return Number.isFinite(value) ? Math.round(value * 100) + "%" : "n/a"; }
+    function human(value) { return String(value || "n/a").replaceAll("_", " "); }
     function esc(value) {
       return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
     }

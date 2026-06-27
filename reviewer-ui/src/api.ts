@@ -5,8 +5,8 @@ const reviewerToken = import.meta.env.VITE_REVIEWER_ANALYZE_TOKEN || "";
 
 export const datasetDashboardUrl = import.meta.env.VITE_DATASET_DASHBOARD_URL || "http://localhost:8080/dataset-dashboard.html";
 
-export function imageUrl(filename: string) {
-  return `${apiBase}/api/images/claims/${encodeURIComponent(filename)}`;
+export function imageUrl(filename: string, kind: "claim" | "reference" = "claim") {
+  return `${apiBase}/api/images/${kind === "reference" ? "reference" : "claims"}/${encodeURIComponent(filename)}`;
 }
 
 export async function fetchCases(): Promise<ReviewCase[]> {

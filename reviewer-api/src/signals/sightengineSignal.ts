@@ -72,23 +72,25 @@ export async function runSightengineSignal(reviewCase: ReviewCase, imagePath: st
     }
 
     const aiGenerated = clamp01(Number(raw.type?.ai_generated ?? 0));
+    const band = aiGenerated >= 0.75 ? "high" : aiGenerated >= 0.35 ? "mixed" : "low";
     return {
       key: "sightengine",
       label: "Sightengine AI image likelihood",
       status: "complete",
       score: Math.round(aiGenerated * 100),
-      confidence: 0.86,
+      confidence: 1,
       explanation: aiGenerated >= 0.75
         ? "Sightengine reports a high AI-generated or AI-edited image likelihood."
         : aiGenerated >= 0.35
           ? "Sightengine reports a mixed AI image likelihood; use alongside other signals."
-          : "Sightengine does not report strong AI image likelihood.",
+          : "Sightengine does not report strong AI image likelihood. This is not proof that the image is authentic.",
       evidence: [
         `Sightengine models=genai checked ${image.filename}.`,
-        `type.ai_generated=${aiGenerated.toFixed(2)}.`
+        `type.ai_generated=${aiGenerated.toFixed(2)} (${band}).`
       ],
       limitations: [
-        "Sightengine genai detection is pixel-based and should not be described as C2PA/SynthID provenance verification."
+        "Sightengine genai detection is pixel-based and should not be described as C2PA/SynthID provenance verification.",
+        "A low detector score can be a false negative, especially for edited, compressed, cropped, or photorealistic images."
       ],
       raw
     };

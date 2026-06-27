@@ -18,4 +18,5 @@ Guardrails:
 - Physical plausibility cannot alone produce `High`.
 - Behavioural context cannot alone produce `High`.
 - Sightengine high AI likelihood can strongly elevate risk, but still appears as evidence with limitations.
+- A low Sightengine score is not treated as proof of authenticity. The OpenAI visual/physical signal also checks visible image anomaly cues, and mixed detector/model evidence is surfaced as a guardrail.
 - Reviewer-facing language avoids absolute fraud claims.

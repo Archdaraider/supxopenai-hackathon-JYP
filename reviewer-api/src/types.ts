@@ -70,6 +70,16 @@ export interface ClaimImage {
   capture_context: string;
 }
 
+export interface GalleryImage {
+  id: string;
+  filename: string;
+  label: string;
+  source: "claim" | "same_order_claim" | "reference";
+  kind: "claim" | "reference";
+  metadata_status?: string;
+  capture_context?: string;
+}
+
 export interface Claim {
   id: string;
   account_id: string;
@@ -96,6 +106,7 @@ export interface ReviewCase {
   product: Product;
   claim: Claim;
   primaryImage?: ClaimImage;
+  galleryImages: GalleryImage[];
   sellerResponse: string;
   escalationSummary: string;
   timeline: Array<{ label: string; date: string; detail: string }>;

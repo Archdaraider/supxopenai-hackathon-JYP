@@ -106,6 +106,15 @@ app.get("/api/images/claims/:filename", (request, response) => {
   response.sendFile(path);
 });
 
+app.get("/api/images/reference/:filename", (request, response) => {
+  const path = store.getReferenceImagePath(request.params.filename);
+  if (!existsSync(path)) {
+    response.status(404).json({ error: "image_not_found" });
+    return;
+  }
+  response.sendFile(path);
+});
+
 app.listen(port, () => {
   console.log(`Reviewer API running at http://localhost:${port}`);
 });
