@@ -69,7 +69,7 @@ button { cursor: pointer; }
   display: grid;
   grid-template-columns: minmax(0, 1fr) 430px;
   gap: 28px;
-  align-items: end;
+  align-items: center;
 }
 
 .loginNarrative {
@@ -93,11 +93,11 @@ button { cursor: pointer; }
 }
 
 .loginNarrative h1 {
-  margin-top: 18px;
+  margin: 18px 0 0;
   max-width: 760px;
-  font-size: clamp(50px, 7vw, 96px);
-  line-height: .9;
-  letter-spacing: -.045em;
+  font-size: 86px;
+  line-height: 1;
+  letter-spacing: 0;
   text-wrap: balance;
 }
 
@@ -313,13 +313,13 @@ h2 { font-size: 28px; letter-spacing: 0; }
 .loginProductTitle {
   display: grid;
   gap: 2px;
-  margin-top: -14px;
+  margin-top: 18px;
   color: #fff;
 }
 
 .loginProductTitle strong {
-  font-size: clamp(28px, 3vw, 44px);
-  line-height: 1;
+  font-size: 40px;
+  line-height: 1.08;
   letter-spacing: 0;
 }
 
@@ -925,6 +925,44 @@ h2 { font-size: 28px; letter-spacing: 0; }
   box-shadow: none;
 }
 
+.rejectCommentLabel {
+  display: grid;
+  gap: 6px;
+  color: #4c433c;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+.rejectCommentLabel textarea {
+  width: 100%;
+  min-height: 78px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  padding: 10px;
+  outline: none;
+  font: 13px/1.45 ui-sans-serif, system-ui, sans-serif;
+  box-shadow: none;
+}
+
+.rejectCommentLabel textarea:focus {
+  border-color: #b9a89a;
+}
+
+.rejectError {
+  border: 1px solid #f5b8c0;
+  border-radius: 8px;
+  background: #fdecef;
+  color: #842029;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.35;
+}
+
 .rejectDecision button {
   border-color: #b42336;
   background: #b42336;
@@ -1306,17 +1344,30 @@ li { margin: 6px 0; }
 
 @media (max-width: 1220px) {
   .topWorkspace { grid-template-columns: 280px minmax(0, 1fr); }
+  .loginNarrative h1 { font-size: 74px; }
+  .loginProductTitle strong { font-size: 36px; }
   .opsCards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .opsLower { grid-template-columns: 1fr; }
   .decisionGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .signalStack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+@media (max-height: 760px) and (min-width: 821px) {
+  .loginNarrative h1 { font-size: 66px; }
+  .loginProductTitle { margin-top: 14px; }
+  .loginProductTitle strong { font-size: 32px; }
+  .loginNarrative p { margin-top: 14px; }
+  .loginMetrics { margin-top: 18px; }
+}
+
 @media (max-width: 820px) {
   .app { padding: 10px; }
   .loginPage { padding: 14px; }
   .loginShell { grid-template-columns: 1fr; align-items: center; }
-  .loginNarrative h1 { font-size: clamp(40px, 13vw, 62px); }
+  .loginNarrative { padding: 10px 0 4px; }
+  .loginNarrative h1 { font-size: 46px; line-height: 1.04; }
+  .loginProductTitle { margin-top: 14px; }
+  .loginProductTitle strong { font-size: 30px; line-height: 1.12; }
   .topbar, .caseHero, .evidenceGrid, .topWorkspace, .manualInputs, .opsHero, .opsCards, .decisionGrid { grid-template-columns: 1fr; }
   .topbar { display: grid; }
   .opsHero { min-height: 0; padding: 18px; }

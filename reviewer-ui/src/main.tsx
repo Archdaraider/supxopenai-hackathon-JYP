@@ -38,6 +38,46 @@ interface CaseActionLog {
   createdAt: string;
 }
 
+const OTHER_REJECT_REASON = "Other reason";
+
+const rejectReasonOptions = [
+  "Damage not supported by submitted evidence",
+  "Item materially matches the listing",
+  "Surface wear and tear does not affect functionality",
+  "Issue appears outside the dispute window",
+  "Claim concerns packaging only; item damage not shown",
+  "Missing required return or evidence",
+  OTHER_REJECT_REASON
+];
+
+function cleanBadge(badge?: string) {
+  return badge?.trim() || "";
+}
+
+function buyerBadgeLabel(buyer: ReviewCase["buyer"]) {
+  const badge = cleanBadge(buyer.user_profile_badge);
+  const normalized = badge.toLowerCase();
+
+  if (!badge) return "Buyer profile unavailable";
+  if (normalized.includes("not verified")) return "Unverified Buyer";
+  if (normalized === "new user") return "New Buyer";
+  if (normalized === "verified user") return "Verified Buyer";
+  if (badge.includes("Buyer")) return badge;
+  if (badge.includes("User")) return badge.replace("User", "Buyer");
+  return `${badge} Buyer`;
+}
+
+function sellerBadgeLabel(seller: ReviewCase["seller"]) {
+  const badge = cleanBadge(seller.user_profile_badge);
+  const normalized = badge.toLowerCase();
+
+  if (!badge) return "Seller profile unavailable";
+  if (normalized.includes("not verified")) return "Unverified Seller";
+  if (normalized === "new user") return "New Seller";
+  if (normalized === "verified user") return seller.seller_type === "shop" ? "Verified Business" : "Verified Seller";
+  return badge;
+}
+
 function App() {
   const [authenticated, setAuthenticated] = useState(false);
   const [cases, setCases] = useState<CaseWithAnalysis[]>([]);
@@ -185,7 +225,7 @@ function App() {
                       {visibleRisk ? <RiskPill level={visibleRisk} /> : <span className="statusPill">Ready</span>}
                     </div>
                     <div className="caseTitle">{item.product.name}</div>
-                    <div className="caseMeta">{item.buyer.user_profile_badge} · S${item.order.refund_amount_requested_sgd}{manual ? " · manual fallback" : ""}</div>
+                    <div className="caseMeta">{buyerBadgeLabel(item.buyer)} - S${item.order.refund_amount_requested_sgd}{manual ? " - manual fallback" : ""}</div>
                   </button>
                 );
               })}
@@ -474,8 +514,8 @@ function CaseFile({ reviewCase }: { reviewCase: ReviewCase }) {
       <div className="caseHero">
         <div>
           <div className="chips">
-            <span className="chip">{reviewCase.buyer.user_profile_badge}</span>
-            <span className="chip">{reviewCase.seller.user_profile_badge}</span>
+            <span className="chip">{buyerBadgeLabel(reviewCase.buyer)}</span>
+            <span className="chip">{sellerBadgeLabel(reviewCase.seller)}</span>
             <span className="chip">{reviewCase.order.programme}</span>
           </div>
           <h2>{reviewCase.product.name}</h2>
@@ -695,18 +735,22 @@ function ReviewerDecisionActions({
   onAction: (action: CaseActionLog) => void;
 }) {
   const [rejectReason, setRejectReason] = useState("Damage not supported by submitted evidence");
+  const [rejectComment, setRejectComment] = useState("");
+  const [rejectError, setRejectError] = useState<string | null>(null);
   const [chatTarget, setChatTarget] = useState<"buyer" | "seller" | null>(null);
-  const reasons = [
-    "Damage not supported by submitted evidence",
-    "Item materially matches the listing",
-    "Surface wear and tear does not affect functionality",
-    "Issue appears outside the dispute window",
-    "Claim concerns packaging only; item damage not shown",
-    "Missing required return or evidence"
-  ];
 
   function addAction(type: CaseActionLog["type"], label: string, detail: string) {
     onAction({ type, label, detail, createdAt: new Date().toISOString() });
+  }
+
+  function updateRejectReason(value: string) {
+    setRejectReason(value);
+    setRejectError(null);
+  }
+
+  function updateRejectComment(value: string) {
+    setRejectComment(value);
+    if (value.trim()) setRejectError(null);
   }
 
   function requestMoreEvidence() {
@@ -727,7 +771,14 @@ function ReviewerDecisionActions({
   }
 
   function rejectRefund() {
-    addAction("reject_refund", "Rejected refund with reason", rejectReason);
+    const trimmedComment = rejectComment.trim();
+    if (rejectReason === OTHER_REJECT_REASON && !trimmedComment) {
+      setRejectError("Add a short comment when using Other reason.");
+      return;
+    }
+
+    const detail = trimmedComment ? `${rejectReason}. Reviewer comment: ${trimmedComment}` : rejectReason;
+    addAction("reject_refund", "Rejected refund with reason", detail);
   }
 
   function openSellerChat() {
@@ -756,9 +807,18 @@ function ReviewerDecisionActions({
           Approve refund
         </button>
         <div className="rejectDecision">
-          <select value={rejectReason} onChange={(event) => setRejectReason(event.target.value)}>
-            {reasons.map((reason) => <option key={reason}>{reason}</option>)}
+          <select value={rejectReason} onChange={(event) => updateRejectReason(event.target.value)}>
+            {rejectReasonOptions.map((reason) => <option key={reason}>{reason}</option>)}
           </select>
+          <label className="rejectCommentLabel">
+            Additional reviewer comments
+            <textarea
+              value={rejectComment}
+              onChange={(event) => updateRejectComment(event.target.value)}
+              placeholder={rejectReason === OTHER_REJECT_REASON ? "Describe the reason for rejection" : "Optional context for this decision"}
+            />
+          </label>
+          {rejectError ? <div className="rejectError">{rejectError}</div> : null}
           <button type="button" onClick={rejectRefund}>
             <XCircle size={18} />
             Reject with selected reason
@@ -937,26 +997,26 @@ function SignalCard({ signal }: { signal: SignalResult }) {
       : signal.key === "physical_plausibility"
         ? Truck
         : ShieldCheck;
+  const notes = reviewerNotes(signal);
 
   return (
     <div className="signalCard">
       <div className="signalHead">
         <div className="signalTitle">
           <Icon size={17} />
-          <strong>{signal.label}</strong>
+          <strong>{reviewerSignalLabel(signal)}</strong>
         </div>
-        <span className={`signalStatus ${signal.status}`}>{signal.status.replace("_", " ")}</span>
+        <span className={`signalStatus ${signal.status}`}>{reviewerStatusLabel(signal)}</span>
       </div>
       <div className="signalScore">
         <span>{signal.score === null ? "N/A" : signal.score}</span>
         <small>{confidenceLabel(signal)}</small>
       </div>
-      <p>{signal.explanation}</p>
+      <p>{reviewerExplanation(signal)}</p>
       <details>
-        <summary>Evidence and limitations</summary>
+        <summary>Reviewer notes</summary>
         <ul>
-          {signal.evidence.map((item) => <li key={item}>{item}</li>)}
-          {signal.limitations.map((item) => <li key={item}>{item}</li>)}
+          {notes.map((item) => <li key={item}>{item}</li>)}
         </ul>
       </details>
     </div>
@@ -964,13 +1024,107 @@ function SignalCard({ signal }: { signal: SignalResult }) {
 }
 
 function confidenceLabel(signal: SignalResult) {
-  if (signal.status === "not_configured") return "not run";
-  if (signal.status === "error") return "excluded from score";
-  if (signal.confidence === null) return "confidence not reported";
-  if (signal.key === "behavioural") return "rules-based behavioural score";
-  if (signal.key === "evidence_sufficiency") return "evidence coverage score";
-  if (signal.key === "sightengine") return "detector result returned";
-  return `${Math.round(signal.confidence * 100)}% model confidence`;
+  if (signal.status === "not_configured") return "Not available for this review";
+  if (signal.status === "error") return "Could not be completed";
+  if (signal.confidence === null) return "Review status unavailable";
+  if (signal.key === "behavioural") return "Account and claim history reviewed";
+  if (signal.key === "evidence_sufficiency") return "Evidence completeness reviewed";
+  if (signal.key === "sightengine") return "AI-image check completed";
+  return `Image review confidence ${Math.round(signal.confidence * 100)}%`;
+}
+
+function reviewerSignalLabel(signal: SignalResult) {
+  if (signal.key === "behavioural") return "Account and claim history";
+  if (signal.key === "sightengine") return "AI-image likelihood";
+  if (signal.key === "physical_plausibility") return "Damage and image consistency";
+  return "Evidence completeness";
+}
+
+function reviewerStatusLabel(signal: SignalResult) {
+  if (signal.status === "complete") return "Reviewed";
+  if (signal.status === "not_configured") return "Not available";
+  return "Needs follow-up";
+}
+
+function reviewerExplanation(signal: SignalResult) {
+  if (signal.status === "not_configured") {
+    return "This check is not available right now, so reviewers should rely on the remaining case context.";
+  }
+
+  if (signal.status === "error") {
+    return "This check could not be completed. Review the case using the available information and request follow-up evidence if needed.";
+  }
+
+  const score = signal.score ?? 0;
+
+  if (signal.key === "behavioural") {
+    if (score >= 65) return "Account and claim history show patterns that need closer reviewer attention.";
+    if (score >= 35) return "Account and claim history show some points to consider, but they are not enough on their own to decide the claim.";
+    return "Account and claim history do not show strong concern on their own.";
+  }
+
+  if (signal.key === "sightengine") {
+    if (score >= 75) return "The AI-image check found a high likelihood that the image may be AI-generated or edited.";
+    if (score >= 35) return "The AI-image check found mixed signs. Treat this as one input alongside the rest of the case.";
+    return "The AI-image check did not find strong signs, but that does not prove the image is authentic.";
+  }
+
+  if (signal.key === "physical_plausibility") {
+    if (score >= 70) return "The image and claimed damage may not fully line up, so compare it carefully with seller response and order context.";
+    if (score >= 35) return "The image gives some useful guidance, but the case still needs normal reviewer judgment.";
+    return "The visible damage appears broadly consistent with the claim, subject to normal reviewer checks.";
+  }
+
+  if (score >= 40) return "The current evidence may not be enough to decide confidently. Consider asking for clearer supporting material.";
+  return "The evidence package is usable for initial review, while still requiring normal policy checks.";
+}
+
+function reviewerNotes(signal: SignalResult) {
+  const notes = reviewerBaseNotes(signal);
+  const sanitized = [...signal.evidence, ...signal.limitations]
+    .map(toReviewerNote)
+    .filter((item): item is string => Boolean(item));
+
+  return uniqueNotes([...notes, ...sanitized]).slice(0, 5);
+}
+
+function reviewerBaseNotes(signal: SignalResult) {
+  if (signal.key === "behavioural") {
+    return ["Account patterns are context only and are not proof of abuse."];
+  }
+
+  if (signal.key === "sightengine") {
+    return ["A low AI-image score does not prove the image is authentic. Edited, compressed, cropped, or realistic images can still be missed."];
+  }
+
+  if (signal.key === "physical_plausibility") {
+    return ["Use this as guidance from the image, then compare with seller response and order context."];
+  }
+
+  return ["If packaging or photo evidence is unclear, request more evidence before deciding."];
+}
+
+function toReviewerNote(item: string) {
+  const normalized = item.trim();
+  if (!normalized) return null;
+
+  if (
+    /models=|type\.ai_generated|^Model:|Configured model|Expected env var|OpenAI|Sightengine|genai|JSON|API|C2PA|SynthID|EXIF|pixel-based/i.test(normalized)
+  ) {
+    return null;
+  }
+
+  return normalized
+    .replace(/^Visual note:\s*/i, "")
+    .replace(/^Observed:\s*/i, "Visible in image: ")
+    .replace(/^Plausibility:\s*/i, "Damage fit: ")
+    .replace(/metadata is stripped, so capture provenance cannot be checked from EXIF\./i, "The uploaded photo has limited capture details.")
+    .replace(/Buyer or dataset notes indicate blurry image evidence\./i, "The photo may be blurry or hard to inspect.")
+    .replace(/No real .* check was run\./i, "This check was not run.");
+}
+
+function uniqueNotes(items: string[]) {
+  return Array.from(new Set(items.map((item) => item.trim()).filter(Boolean)));
 }
 
 function PreAnalysis() {
