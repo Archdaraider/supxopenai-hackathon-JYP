@@ -1,0 +1,45 @@
+name: proof
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - staging
+      - master
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_VISION_MODEL: ${{ secrets.OPENAI_VISION_MODEL }}
+      OPENAI_NARRATOR_MODEL: ${{ secrets.OPENAI_NARRATOR_MODEL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build web
+        run: npm run build
+
+      - name: Deterministic eval
+        run: npm run eval:deterministic
+
+      - name: Pipeline eval
+        run: npm run eval:pipeline
+
+      - name: Signal 1 eval with OpenAI secrets
+        if: ${{ env.OPENAI_API_KEY != '' && env.OPENAI_VISION_MODEL != '' }}
+        run: npm run eval:signal1

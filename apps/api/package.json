@@ -1,0 +1,29 @@
+{
+  "name": "claim-integrity-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "eval:deterministic": "tsx src/scripts/runDeterministicEval.ts",
+    "eval:signal1": "tsx src/scripts/runSignal1Eval.ts",
+    "eval:pipeline": "tsx src/scripts/runFullPipeline.ts"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.19.2",
+    "imghash": "^1.1.4",
+    "openai": "^6.42.0",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}
